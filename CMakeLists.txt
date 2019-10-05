@@ -15,7 +15,6 @@ add_executable(mem-analyze
         src/main.cpp
         src/map-parser.cpp src/map-parser.hpp
         src/memory-searcher.cpp src/memory-searcher.hpp
-        src/dev-mem.cpp src/dev-mem.hpp
         )
 
 #Build sample target-programs to be analysed
