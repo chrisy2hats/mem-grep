@@ -1,12 +1,6 @@
 cmake_minimum_required(VERSION 3.00)
 project(mem-analyze)
 
-include(ProcessorCount)
-ProcessorCount(CORE_COUNT)
-if (NOT CORE_COUNT EQUAL 0)
-    set(CMAKE_BUILD_PARALLEL_LEVEL ${CORE_COUNT})
-endif ()
-
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -fpermissive")
 set(EXECUTABLE_OUTPUT_PATH "out")
@@ -14,7 +8,8 @@ set(EXECUTABLE_OUTPUT_PATH "out")
 add_executable(mem-analyze
         src/main.cpp
         src/map-parser.cpp src/map-parser.hpp
-        src/memory-searcher.cpp src/memory-searcher.hpp
+        src/memory-searcher.hpp
+        src/memory-writer.hpp
         )
 
 #Build sample target-programs to be analysed

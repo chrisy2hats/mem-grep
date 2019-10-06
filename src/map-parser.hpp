@@ -5,11 +5,12 @@
 #include <fstream>
 #include <string>
 #include <cstring>
+#include <vector>
 #include <algorithm>
 
 struct MAPS_ENTRY {
-    void* start;
-    void* end;
+    void *start;
+    void *end;
     std::string permissions;
     std::string unknown;
     std::string fd;
@@ -18,6 +19,8 @@ struct MAPS_ENTRY {
     std::string file_path;
 };
 
-struct MAPS_ENTRY ParseMap(const uint64_t &PID);
+std::vector<struct MAPS_ENTRY> ParseMap(const uint64_t &PID);
+
 struct MAPS_ENTRY ParseLine(const std::string &line);
+
 #endif //DAILY_MAP_PARSER_HPP
