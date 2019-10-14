@@ -12,10 +12,9 @@ struct MAPS_ENTRY {
     void *start;
     void *end;
     std::string permissions;
-    std::string unknown;
-    std::string fd;
-    std::string fd_val;
-    std::string unknown_2;
+    std::string offset;
+    std::string device;
+    std::string inode;
     std::string file_path;
 };
 
