@@ -3,8 +3,20 @@
 #include "memory-writer.hpp"
 #include <cassert>
 
-int main() {
-    auto pid = 12204;
+int main(int argc,char** argv) {
+	auto pid=0;
+	if (argc == 3){
+		if (strcmp("--pid",argv[1]) == 0){
+			pid=std::stoul(argv[2]);
+			std::cout << "PID parsed as:" << pid << std::endl;
+		}else{
+		    std::cout << "ERR: 1st arg isn't --pid it is" << argv[1] << std::endl;
+			exit(1);
+		}
+	}else{
+	    std::cout << "PID not provided.";
+	    exit(1);
+	}
     uint32_t to_find=127;
 
     auto entries = ParseMap(pid);
