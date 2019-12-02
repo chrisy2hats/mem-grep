@@ -16,9 +16,21 @@ std::vector<struct MAPS_ENTRY> ParseMap(const uint64_t &PID) {
 
     std::vector<MAPS_ENTRY> entries = {};
     string line;
+    size_t lineCount=1;
     while (std::getline(maps_file, line)) {
         MAPS_ENTRY mapEntry = ParseLine(line);
+        switch(lineCount){
+            case 2:
+                mapEntry.file_path=".data";
+                break;
+            case 3:
+                mapEntry.file_path=".bss";
+                break;
+            default:
+                break;
+        }
         entries.push_back(mapEntry);
+        lineCount++;
     }
     maps_file.close();
     return entries;
@@ -30,6 +42,7 @@ std::vector<struct MAPS_ENTRY> ParseMap(const uint64_t &PID) {
 //    address           perms offset  dev   inode       pathname
 //    00400000-00452000 r-xp 00000000 08:02 173521      /usr/bin/dbus-daemon
 struct MAPS_ENTRY ParseLine(const std::string &line) {
+//	std::cout << "line=" << line<< std::endl;
     struct MAPS_ENTRY mapEntry = {};
 
     if (line.empty())
@@ -38,7 +51,7 @@ struct MAPS_ENTRY ParseLine(const std::string &line) {
     std::vector<size_t> spaces = {};
     for (size_t i = 0; i < line.length(); i++) {
         if (line[i] == ' ') {
-            spaces.push_back(i + 1);
+            spaces.emplace_back(i + 1);
         }
     }
     //A valid maps line will have atleast 5 spaces in it and contain a '-'
@@ -63,7 +76,7 @@ struct MAPS_ENTRY ParseLine(const std::string &line) {
     mapEntry.device = line.substr(spaces[2], spaces[3] - spaces[2] - 1);
     mapEntry.inode = line.substr(spaces[3], spaces[4] - spaces[3] - 1);
 
-    string file_path = line.substr(spaces[5]);
+    string file_path = line.substr(spaces[4]);
     file_path.erase(std::remove(file_path.begin(), file_path.end(), ' '), file_path.end());
     mapEntry.file_path = file_path;
 

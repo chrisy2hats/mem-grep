@@ -1,6 +1,5 @@
-#ifndef DAILY_MAP_PARSER_HPP
-#define DAILY_MAP_PARSER_HPP
-
+#ifndef MEMGREP_MAP_PARSER_HPP
+#define MEMGREP_MAP_PARSER_HPP
 #include <iostream>
 #include <fstream>
 #include <string>
@@ -19,7 +18,5 @@ struct MAPS_ENTRY {
 };
 
 std::vector<struct MAPS_ENTRY> ParseMap(const uint64_t &PID);
-
 struct MAPS_ENTRY ParseLine(const std::string &line);
-
-#endif //DAILY_MAP_PARSER_HPP
+#endif

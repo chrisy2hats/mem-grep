@@ -10,6 +10,8 @@ add_executable(mem-analyze
         src/map-parser.cpp src/map-parser.hpp
         src/memory-searcher.hpp
         src/memory-writer.hpp
+        src/bss-searcher.cpp src/bss-searcher.hpp
+        src/deep-copy.cpp src/deep-copy.hpp
         )
 
 #Build sample target-programs to be analysed
