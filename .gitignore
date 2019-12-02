@@ -9,6 +9,8 @@ cmake_install.cmake*
 *.txt
 !CMakeLists.txt
 *.o
+core.*
+crash-*
 
 #Vim swap files
 *.swp
@@ -21,3 +23,9 @@ report/*
 
 #Avoid binaries
 out/*
+
+#Avoid stub files for FreeBSD compiles
+*stub*
+
+#Avoid files that are tests
+*test-*
