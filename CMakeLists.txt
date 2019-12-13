@@ -12,6 +12,8 @@ add_executable(mem-analyze
         src/memory-writer.hpp
         src/bss-searcher.cpp src/bss-searcher.hpp
         src/deep-copy.cpp src/deep-copy.hpp
+        src/malloc-metadata.cpp src/malloc-metadata.hpp
+        src/prerun-checks.cpp src/prerun-checks.hpp
         )
 
 #Build sample target-programs to be analysed
