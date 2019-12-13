@@ -1,13 +1,13 @@
 #include "deep-copy.hpp"
 
-char *deepCopy(const pid_t pid, void *start, const size_t size) {
+char *deepCopy(const pid_t& pid, const void *start, const size_t& size) {
     char *mem_area = new char[size];
 
     struct iovec local[1];
     struct iovec remote[1];
     local[0].iov_base = mem_area;
     local[0].iov_len = size;
-    remote[0].iov_base = start;
+    remote[0].iov_base = const_cast<void *>(start);
     remote[0].iov_len = size;
 
     ssize_t nread = 0;
@@ -19,6 +19,3 @@ char *deepCopy(const pid_t pid, void *start, const size_t size) {
     }
     return mem_area;
 }
-
-//TODO
-//std::future<void *> deepCopyAsync(pid_t pdi, void *start, size_t size){}
