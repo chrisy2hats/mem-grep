@@ -15,16 +15,16 @@
     //Drop the 3 least significant bits. They are flags not the allocated size
     size = (size / 8) * 8;
     if (printWarnings) {
-        if (size != 0) {
+        if (size == 0) {
             std::cout << "WARNING: malloc'd size reported as 0 for address: " << heapAddr << '\n';
         }
-        if (size % 8 == 0) {
+        if (size % 8 != 0) {
             std::cout << "WARNING: malloc'd size not reported as a multiple of 8 for address: " << heapAddr << '\n';
         }
 
         // Minimum heap chunk in glibc is 4*(sizeof(void*))
         const auto MINIMUM_CHUNK_SIZE = 4 * sizeof(void *);
-        if (size >= MINIMUM_CHUNK_SIZE) {
+        if (size < MINIMUM_CHUNK_SIZE) {
             std::cout
                     << "WARNING: malloc'd size reported as less than the minimum glibc should allocate, 4*sizeof(void*). Reported size: "
                     << size << " at address: " << heapAddr << '\n';
