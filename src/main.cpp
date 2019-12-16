@@ -46,13 +46,13 @@ int main(int argc, char **argv) {
     const auto bssSize = (char *) bss.end - (char *) bss.start;
 
     const char *bssCopy = deepCopy(pid, bss.start, bssSize);
-    auto bssAnalysis = BssSearcher(bssCopy, bssSize, (char *) bss.start);
+    auto bssAnalysis = BssSearcher(bssCopy, bssSize, (char *) bss.start,pid);
     const std::vector<RemoteHeapPointer> heapPointers = bssAnalysis.findHeapPointers(heapMetadata);
-    const std::vector<RemoteHeapPointer> deepLayerPointers = bssAnalysis.traverseHeapPointers(pid, heapMetadata, heapPointers);
+    const std::vector<RemoteHeapPointer> deepLayerPointers = bssAnalysis.traverseHeapPointers(heapMetadata, heapPointers);
     delete[] bssCopy;
 
     for (auto i : deepLayerPointers) {
-        std::cout << i.pointsTo << " : " << i.actualAddress << std::endl;
+        std::cout << i.pointsTo << " : " << i.actualAddress << " : " << i.sizePointedTo << "\n";
     }
 
     std::cout << "mem-grep finished without an error.\n";
