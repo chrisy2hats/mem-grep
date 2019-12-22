@@ -41,11 +41,14 @@ add_executable(unit-tests
         tests/map-parser-test.cpp
         tests/memory-searcher-test.cpp
         tests/prerun-checks-test.cpp
+        tests/bss-searcher-test.cpp
 
         src/map-parser.cpp src/map-parser.hpp
         src/memory-searcher.hpp
         src/deep-copy.cpp src/deep-copy.hpp
         src/prerun-checks.cpp src/prerun-checks.hpp
+        src/bss-searcher.cpp src/bss-searcher.hpp
+        src/malloc-metadata.cpp src/malloc-metadata.hpp
         )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -pedantic")
@@ -55,6 +58,11 @@ project(unit-tests-target-programs C)
 add_executable(runUntilManipulatedHeap
         tests/target-programs/runUntilManipulatedHeap.c
         )
+
+add_executable(bssHeapPointers
+        tests/target-programs/bssHeapPointers.c
+        )
+
 add_executable(runUntilManipulatedStack
         tests/target-programs/runUntilManipulatedStack.c
         )
