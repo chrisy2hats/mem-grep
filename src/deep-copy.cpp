@@ -13,8 +13,8 @@ char *deepCopy(const pid_t& pid, const void *start, const size_t& size) {
     ssize_t nread = 0;
     nread = process_vm_readv(pid, local, 1, remote, 1, 0);
     if (nread != (ssize_t) size) {
-        std::cout << "Failed to extract bss section @" << __LINE__ << "\n";
-        std::cout << "Only read" << nread << " bytes\n";
+        std::cout << "Failed to copy memory from remote process at line:" << __LINE__ << " in file:" << __FILE__ << "\n";
+        std::cout << "Read:" << nread << " bytes when: " << size << " bytes should have been read\n";
         exit(1);
     }
     return mem_area;
