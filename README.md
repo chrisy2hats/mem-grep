@@ -1,4 +1,8 @@
 mem-grep
+## About  
+mem-grep is a utiling for finding information about the memory layout of a running process.  
+The aim is to provide a tool for the same usecase as [CheatEngine](https://www.cheatengine.org/) but for Linux  
+Currently the tool focuses on finding and traversing heap pointers by exploiting the known layout of ELF binaries and the glibc heap
 
 ## Building
 ### Dependencies    
@@ -33,13 +37,19 @@ Catch2 is a submodule to this repository so to download it run
 ``
 git submodule update --init
 ``
-
-Once the clone is finished the unit tests can be built via  
+The unit tests have additional dependencies to building the main program  
+The unit tests also require nasm and GNU ld  
+To install these on Ubuntu 18.04 run  
 ``
-cmake . && make -j $(nproc) unit-tests  
+sudo apt update && sudo apt install -y nasm binutils  
+``
+
+Once Catch2 is cloned and depencies satisfied the unit tests can be built via  
+``
+cmake . && make -j $(nproc) unit-tests bssHeapPointers runUntilManipulatedStack runUntilManipulatedHeap asmTarget  
 ``  
-This will output the "unit-tests" binary in the "out" directory.  
-This binary can be run to execute the unit tests via  
+This will output the "unit-tests" binary and other required binaries in the "out" directory  
+The unit tests can then be run via  
 ``
 ./out/unit-tests
 ``
