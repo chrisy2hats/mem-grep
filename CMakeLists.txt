@@ -14,6 +14,7 @@ add_executable(mem-analyze
         src/deep-copy.cpp src/deep-copy.hpp
         src/malloc-metadata.cpp src/malloc-metadata.hpp
         src/prerun-checks.cpp src/prerun-checks.hpp
+        src/stack-searcher.cpp src/stack-searcher.hpp
         )
 
 
