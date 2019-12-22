@@ -16,7 +16,7 @@ BraceWrapping:
   BeforeCatch: false
   BeforeElse: false
 FixNamespaceComments: false
-AllowShortIfStatementsOnASingleLine: Never
+AllowShortIfStatementsOnASingleLine: false
 IndentCaseLabels: false
 AccessModifierOffset: -8
 ColumnLimit: 80
