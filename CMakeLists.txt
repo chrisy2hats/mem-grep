@@ -16,37 +16,53 @@ add_executable(mem-analyze
         src/prerun-checks.cpp src/prerun-checks.hpp
         )
 
-#Build sample target-programs to be analysed
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -pedantic")
 
-project(onstackint)
+#Programs for manual testing
+project(onstackint C)
 add_executable(onstackint
-        target-programs/onstackint/main.c
+        tests/manual-target-programs/onstackint/main.c
         )
 
-project(onheapint)
+project(onheapint C)
 add_executable(onheapint
-        target-programs/onheapint/main.c
+        tests/manual-target-programs/onheapint/main.c
         )
 
-#Run unit tests
+project(unit-tests)
 if (NOT EXISTS "${PROJECT_SOURCE_DIR}/tests/catch2")
     message(FATAL_ERROR "Catch2 submodule not initialised.")
 endif ()
 include_directories(tests/catch2/single_include)
 add_executable(unit-tests
         tests/test_main.cpp
+        tests/null-structs.hpp
+
         tests/map-parser-test.cpp
+        tests/memory-searcher-test.cpp
+        tests/prerun-checks-test.cpp
 
-        src/map-parser.cpp
-        src/map-parser.hpp
+        src/map-parser.cpp src/map-parser.hpp
+        src/memory-searcher.hpp
+        src/deep-copy.cpp src/deep-copy.hpp
+        src/prerun-checks.cpp src/prerun-checks.hpp
         )
 
-#Generate cppcheck report
-add_custom_target(cppcheck
-        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
-        COMMAND rm -rf report 2>/dev/null
-        COMMAND mkdir report
-        COMMAND cppcheck --enable=all --suppress=missingIncludeSystem --xml --xml-version=2 ./src 2>report/report-src.xml
-        COMMAND cppcheck-htmlreport --source-dir=. --title=mem-analyse --file=report/report-src.xml --report-dir=report
+set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -pedantic")
+
+#Build sample target-programs to be analysed
+project(unit-tests-target-programs C)
+add_executable(runUntilManipulatedHeap
+        tests/target-programs/runUntilManipulatedHeap.c
         )
+add_executable(runUntilManipulatedStack
+        tests/target-programs/runUntilManipulatedStack.c
+        )
+
+#Build basic assembly program for use in testing
+set(CMAKE_NASM_LINK_EXECUTABLE "ld <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
+set(CAN_USE_ASSEMBLER TRUE)
+set(CMAKE_ASM_NASM_OBJECT_FORMAT elf64)
+project("asmTarget" ASM_NASM)
+enable_language(ASM_NASM)
+add_executable("asmTarget" tests/target-programs/asmTarget.asm)
+set_target_properties("asmTarget" PROPERTIES LINKER_LANGUAGE NASM)

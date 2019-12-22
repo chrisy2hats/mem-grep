@@ -1,5 +1,11 @@
-#include "../src/map-parser.hpp"
 #include <catch2/catch.hpp>
+#include "../src/map-parser.hpp"
+#include "null-structs.hpp"
+
+#include <string>
+#include <signal.h>
+#include <unistd.h>
+
 
 TEST_CASE("Stack map entry parsing") {
     auto line = "7ffd6ff40000-7ffd6ff61000 rw-p 00000000 00:00 0                          [stack]";
@@ -72,4 +78,46 @@ TEST_CASE("Garbage input line parsing") {
     REQUIRE(lineRes.device == "");
     REQUIRE(lineRes.inode == "");
     REQUIRE(lineRes.file_path == "");
+}
+TEST_CASE("Small x64_64 asm program"){
+
+    /*Example maps file for small asm program. Note no heap
+    00400000-00401000 r-xp 00000000 fd:01 9452734                            /home/foobar/mem-analyse/target-programs/redzone-user/write
+    7ffc74a2a000-7ffc74a4b000 rwxp 00000000 00:00 0                          [stack]
+    7ffc74bf3000-7ffc74bf6000 r--p 00000000 00:00 0                          [vvar]
+    7ffc74bf6000-7ffc74bf8000 r-xp 00000000 00:00 0                          [vdso]
+    ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
+     */
+
+    const auto asmProgName = "asmTarget";
+    const auto asmProgPath = "./asmTarget";
+    std::vector<MAPS_ENTRY> results;
+    int pid;
+    if ((pid=fork())==0){
+        execl(asmProgPath,NULL);
+    }else {
+        //Give the kernel a chance to load the process and initialise the /proc/maps file
+        //A way to avoid sleep but ensuring that the program has been loaded would be ideal but this works
+        sleep(1);
+
+        results = ParseMap(pid);
+        kill(pid, SIGKILL);
+    }
+
+    struct MAPS_ENTRY stack = NULL_MAPS_ENTRY;
+    struct MAPS_ENTRY heap = NULL_MAPS_ENTRY;
+    for (const MAPS_ENTRY& i : results){
+        if (i.file_path=="[stack]"){
+            stack=i;
+        }
+        if (i.file_path=="[heap]"){
+            heap=i;
+        }
+    }
+
+    REQUIRE(results[0].file_path.find(asmProgName) != std::string::npos);
+    REQUIRE(stack.start != NULL_MAPS_ENTRY.start);
+
+    //This asm program makes 0 heap allocations
+    REQUIRE(heap.start == NULL_MAPS_ENTRY.start);
 }
