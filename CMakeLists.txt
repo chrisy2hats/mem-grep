@@ -15,6 +15,7 @@ add_executable(mem-analyze
         src/malloc-metadata.cpp src/malloc-metadata.hpp
         src/prerun-checks.cpp src/prerun-checks.hpp
         src/stack-searcher.cpp src/stack-searcher.hpp
+        src/heap-traverser.cpp src/heap-traverser.hpp
         )
 
 

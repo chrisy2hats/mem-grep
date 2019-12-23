@@ -7,13 +7,7 @@
 #include "map-parser.hpp"
 #include "deep-copy.hpp"
 #include "malloc-metadata.hpp"
-
-// A pointer to heap memory in the remote process
-struct RemoteHeapPointer {
-  void *actualAddress;
-  void *pointsTo;  // The heap location pointed to
-  size_t sizePointedTo=0;
-};
+#include "heap-traverser.hpp"
 
 class BssSearcher{
 private:
@@ -30,8 +24,6 @@ public:
     //Bss Size and location however won't change during runtime as .bss is a fixed size at compile time of the remote program
     BssSearcher(const char *bssStart, const size_t &bssSize, const char *actualBssStart,const pid_t& pid);
 
-
     std::vector<RemoteHeapPointer> findHeapPointers(const MAPS_ENTRY& heap);
-    std::vector<RemoteHeapPointer> traverseHeapPointers(const struct MAPS_ENTRY& heap, std::vector<RemoteHeapPointer> heapPointers);
 };
 #endif
