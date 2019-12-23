@@ -3,13 +3,11 @@
 using std::cout;
 using std::endl;
 
-BssSearcher::BssSearcher(const char *bssStart, const size_t &bssSize, const char *actualBssStart,const pid_t& pid)
-        : pid_(pid)
-        {
-    bssSize_ = bssSize;
-    bssStart_ = bssStart;
-    actualBssStart_ = actualBssStart;
-}
+BssSearcher::BssSearcher(const char *actualBssStart,const char* actualBssEnd,const pid_t& pid)
+        : actualBssStart_(actualBssStart),
+        actualBssEnd_(actualBssEnd),
+        pid_(pid)
+        {}
 
 [[nodiscard]] bool BssSearcher::AddrIsOnHeap(const void *addr, const void *heapStart, const void *heapEnd) const {
     const bool IsOnHeap = addr >= heapStart && addr <= heapEnd;
@@ -17,11 +15,14 @@ BssSearcher::BssSearcher(const char *bssStart, const size_t &bssSize, const char
 }
 
 std::vector<RemoteHeapPointer> BssSearcher::findHeapPointers(const MAPS_ENTRY &heap) {
+    const size_t bssSize = actualBssEnd_ - actualBssStart_;
+    const char* bssCopy = deepCopy(pid_,actualBssStart_,bssSize);
+
     auto matches = std::vector<RemoteHeapPointer>();
     size_t zeroCount = 0, onHeapCount = 0, offHeapCount = 0;
-    for (size_t i = 0; i < bssSize_; i += (sizeof(void *))) {
+    for (size_t i = 0; i < bssSize; i += (sizeof(void *))) {
         size_t current = 0;
-        memcpy(&current, bssStart_ + i, sizeof(void *));
+        memcpy(&current, bssCopy + i, sizeof(void *));
         if (current == 0) {
             zeroCount++;
             continue;
@@ -32,7 +33,7 @@ std::vector<RemoteHeapPointer> BssSearcher::findHeapPointers(const MAPS_ENTRY &h
         // And addressPointerTo will be i (The memory address potentially on the heap
         // Except within our deepcopy of the processes .bss section not the
         // actual .bss section
-        auto pointerLocation = (void **) (bssStart_ + i);
+        auto pointerLocation = (void **) (bssCopy + i);
         auto addressPointedTo = (void *) *pointerLocation;
 
         if (AddrIsOnHeap(addressPointedTo, heap.start, heap.end)) {
@@ -53,5 +54,6 @@ std::vector<RemoteHeapPointer> BssSearcher::findHeapPointers(const MAPS_ENTRY &h
             offHeapCount++;
         }
     }
+    delete[] bssCopy;
     return matches;
 }
