@@ -37,13 +37,9 @@ TEST_CASE("5 pointers target program"){
         REQUIRE(bss.start != NULL_MAPS_ENTRY.start);
         REQUIRE(bss.end != NULL_MAPS_ENTRY.end);
         REQUIRE(bss.file_path != NULL_MAPS_ENTRY.file_path);
-        const size_t bssSize = (char*)bss.end - (char*) bss.start;
-        const char* bssCopy = deepCopy(pid,bss.start,bssSize);
-        REQUIRE(bssCopy != nullptr);
-        auto b = BssSearcher(bssCopy,bssSize,(char*)bss.start,pid);
+        auto b = BssSearcher((char*)bss.start,(char*)bss.end,pid);
         auto heapPointers = b.findHeapPointers(heapMetadata);
         REQUIRE(heapPointers.size()==5);
-        delete[] bssCopy;
 
         kill(pid, SIGKILL);
     }
@@ -73,16 +69,11 @@ TEST_CASE("0 pointers target program"){
                 bss = entry;
             }
         }
-        const size_t bssSize = (char*)bss.end - (char*) bss.start;
-        const char* bssCopy = deepCopy(pid,bss.start,bssSize);
-        REQUIRE(bssCopy!= nullptr);
-        auto b = BssSearcher(bssCopy,bssSize,(char*)bss.start,pid);
+        auto b = BssSearcher((char*)bss.start,(char*)bss.end,pid);
         auto heapPointers = b.findHeapPointers(heapMetadata);
-        delete[] bssCopy;
 
         kill(pid, SIGKILL);
         REQUIRE(heapPointers.empty());
     }
 }
-
 

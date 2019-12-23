@@ -36,7 +36,8 @@ TEST_CASE("Multi-layered bss pointers") {
         REQUIRE(bssSize < (UINTMAX_MAX-128));
         const char *bssCopy = deepCopy(pid, bss.start, bssSize);
         REQUIRE(bssCopy != nullptr);
-        auto b = BssSearcher(bssCopy, bssSize, (char *) bss.start, pid);
+        auto b = BssSearcher((char*)bss.start,(char*)bss.end,pid);
+
         auto heapPointers = b.findHeapPointers(heapMetadata);
         REQUIRE(heapPointers.size() == 3);
         delete[] bssCopy;
