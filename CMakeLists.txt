@@ -16,6 +16,7 @@ add_executable(mem-analyze
         src/prerun-checks.cpp src/prerun-checks.hpp
         src/stack-searcher.cpp src/stack-searcher.hpp
         src/heap-traverser.cpp src/heap-traverser.hpp
+        src/argument-parsing.cpp src/argument-parsing.hpp
         )
 
 
@@ -43,6 +44,7 @@ add_executable(unit-tests
         tests/memory-searcher-test.cpp
         tests/prerun-checks-test.cpp
         tests/bss-searcher-test.cpp
+        tests/heap-traverser-test.cpp
 
         src/map-parser.cpp src/map-parser.hpp
         src/memory-searcher.hpp
@@ -50,6 +52,7 @@ add_executable(unit-tests
         src/prerun-checks.cpp src/prerun-checks.hpp
         src/bss-searcher.cpp src/bss-searcher.hpp
         src/malloc-metadata.cpp src/malloc-metadata.hpp
+        src/heap-traverser.cpp src/heap-traverser.hpp
         )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -pedantic")
@@ -68,6 +71,10 @@ add_executable(runUntilManipulatedStack
         tests/target-programs/runUntilManipulatedStack.c
         )
 
+add_executable(multiLayeredBssHeapPointers
+        tests/target-programs/multiLayerBssHeapPointers.c
+        )
+
 #Build basic assembly program for use in testing
 set(CMAKE_NASM_LINK_EXECUTABLE "ld <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
 set(CAN_USE_ASSEMBLER TRUE)
@@ -76,3 +83,11 @@ project("asmTarget" ASM_NASM)
 enable_language(ASM_NASM)
 add_executable("asmTarget" tests/target-programs/asmTarget.asm)
 set_target_properties("asmTarget" PROPERTIES LINKER_LANGUAGE NASM)
+
+add_custom_target(cppcheck
+        WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
+        COMMAND rm -rf report 2>/dev/null
+        COMMAND mkdir report
+        COMMAND cppcheck --enable=all --suppress=missingIncludeSystem --xml --xml-version=2 ./src 2>report/report-src.xml
+        COMMAND cppcheck-htmlreport --source-dir=. --title=mem-analyse --file=report/report-src.xml --report-dir=report
+        )
