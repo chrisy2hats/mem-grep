@@ -14,7 +14,7 @@ BssSearcher::BssSearcher(const char *actualBssStart,const char* actualBssEnd,con
     return IsOnHeap;
 }
 
-std::vector<RemoteHeapPointer> BssSearcher::findHeapPointers(const MAPS_ENTRY &heap) {
+[[nodiscard]] std::vector<RemoteHeapPointer> BssSearcher::findHeapPointers(const MAPS_ENTRY &heap) const{
     const size_t bssSize = actualBssEnd_ - actualBssStart_;
     const char* bssCopy = deepCopy(pid_,actualBssStart_,bssSize);
 

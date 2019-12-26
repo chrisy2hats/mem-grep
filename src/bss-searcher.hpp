@@ -24,6 +24,6 @@ public:
     //Bss Size and location however won't change during runtime as .bss is a fixed size at compile time of the remote program
     BssSearcher(const char *actualBssStart,const char* actualBssEnd,const pid_t& pid);
 
-    std::vector<RemoteHeapPointer> findHeapPointers(const MAPS_ENTRY& heap);
+    [[nodiscard]] std::vector<RemoteHeapPointer> findHeapPointers(const MAPS_ENTRY& heap) const;
 };
 #endif
