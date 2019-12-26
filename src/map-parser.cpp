@@ -4,8 +4,12 @@ using std::cout;
 using std::endl;
 using std::string;
 
-std::vector<struct MAPS_ENTRY> ParseMap(const uint64_t &PID) {
-    const string maps_path = "/proc/" + std::to_string(PID) + "/maps";
+MapParser::MapParser(const pid_t pid) :
+        pid_(pid) {}
+
+[[nodiscard]] std::vector<struct MAPS_ENTRY> MapParser::ParseMap() {
+
+    const string maps_path = "/proc/" + std::to_string(pid_) + "/maps";
 
     std::ifstream maps_file(maps_path);
     if (!maps_file) {
@@ -16,18 +20,29 @@ std::vector<struct MAPS_ENTRY> ParseMap(const uint64_t &PID) {
 
     std::vector<MAPS_ENTRY> entries = {};
     string line;
-    size_t lineCount=1;
+    size_t lineCount = 1;
     while (std::getline(maps_file, line)) {
         MAPS_ENTRY mapEntry = ParseLine(line);
-        switch(lineCount){
-            case 2:
-                mapEntry.file_path=".data";
-                break;
-            case 3:
-                mapEntry.file_path=".bss";
-                break;
-            default:
-                break;
+        if (mapEntry.file_path == "[stack]") {
+            stack_ = mapEntry;
+        } else if (mapEntry.file_path == "[heap]") {
+            heap_ = mapEntry;
+        } else {
+            switch (lineCount) {
+                case 1:
+                    text_=mapEntry;
+                    break;
+                case 2:
+                    data_ = mapEntry;
+                    mapEntry.file_path = ".data";
+                    break;
+                case 3:
+                    bss_ = mapEntry;
+                    mapEntry.file_path = ".bss";
+                    break;
+                default:
+                    break;
+            }
         }
         entries.push_back(mapEntry);
         lineCount++;
@@ -41,7 +56,7 @@ std::vector<struct MAPS_ENTRY> ParseMap(const uint64_t &PID) {
 // The lines have the following format
 //    address           perms offset  dev   inode       pathname
 //    00400000-00452000 r-xp 00000000 08:02 173521      /usr/bin/dbus-daemon
-struct MAPS_ENTRY ParseLine(const std::string &line) {
+struct MAPS_ENTRY MapParser::ParseLine(const std::string &line) const {
 //	std::cout << "line=" << line<< std::endl;
     struct MAPS_ENTRY mapEntry = {};
 
