@@ -27,6 +27,9 @@ private:
     struct MAPS_ENTRY data_;
     struct MAPS_ENTRY text_;
 
+#ifdef UNIT_TEST
+public:
+#endif
     [[nodiscard]] struct MAPS_ENTRY ParseLine(const std::string &line) const;
 
 public:

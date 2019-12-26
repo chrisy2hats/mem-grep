@@ -48,10 +48,13 @@ TEST_CASE("Find Value on heap") {
     } else {
         //Give the kernel a chance to load the process and initialise the /proc/maps file
         //A way to avoid sleep but ensuring that the program has been loaded would be ideal but this works
-        sleep(1);
 
+        sleep(1);
         std::cout << "Analysing PID:" << pid << std::endl;
-        auto maps = ParseMap(pid);
+
+        auto parser = MapParser(pid);
+        auto maps = parser.ParseMap();
+
         struct MAPS_ENTRY heap;
         for (const auto &i : maps) {
             if (i.file_path == "[heap]") {
@@ -64,6 +67,7 @@ TEST_CASE("Find Value on heap") {
         const uint32_t to_find = 127127;
         void *start = (void *) heap.start;
         void *end = (void *) heap.end;
+        sleep(1);
         auto results = SearchSection(start, end, pid, to_find);
 
         REQUIRE(results.size() == 1);
@@ -83,7 +87,8 @@ TEST_CASE("Find Value on stack") {
         sleep(1);
 
         std::cout << "Analysing PID:" << pid << std::endl;
-        auto maps = ParseMap(pid);
+        auto parser = MapParser(pid);
+        auto maps = parser.ParseMap();
         struct MAPS_ENTRY stack;
         for (const auto &i : maps) {
             if (i.file_path == "[stack]") {

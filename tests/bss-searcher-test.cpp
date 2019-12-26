@@ -17,7 +17,8 @@ TEST_CASE("5 pointers target program"){
 
         sleep(1);
         std::cout << "Analysing PID:" << pid << std::endl;
-        auto maps = ParseMap(pid);
+        auto parser = MapParser(pid);
+        auto maps = parser.ParseMap();
 
         struct MAPS_ENTRY heapMetadata = NULL_MAPS_ENTRY;
         struct MAPS_ENTRY bss = NULL_MAPS_ENTRY;
@@ -56,7 +57,8 @@ TEST_CASE("0 pointers target program"){
 
         sleep(1);
         std::cout << "Analysing PID:" << pid << std::endl;
-        auto maps = ParseMap(pid);
+        auto parser = MapParser(pid);
+        auto maps = parser.ParseMap();
 
         struct MAPS_ENTRY heapMetadata = NULL_MAPS_ENTRY;
         struct MAPS_ENTRY bss = NULL_MAPS_ENTRY;
