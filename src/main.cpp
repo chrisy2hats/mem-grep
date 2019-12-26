@@ -1,7 +1,6 @@
 #include "map-parser.hpp"
 #include "bss-searcher.hpp"
 #include "prerun-checks.hpp"
-#include "memory-searcher.cpp"
 #include "stack-searcher.hpp"
 #include "heap-traverser.hpp"
 #include "argument-parsing.hpp"
