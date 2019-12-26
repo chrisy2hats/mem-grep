@@ -55,6 +55,7 @@ size_t HeapTraverser::heapPointersKnown(const std::vector<RemoteHeapPointer> &ba
     for (const auto &i : basePointers) {
         total += i.totalSubPointers;
     }
+    total+=basePointers.size();
     return total;
 }
 
