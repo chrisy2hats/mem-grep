@@ -12,11 +12,16 @@ struct cliArgs{
     bool TraverseStackPointers=false;
     pid_t pid=false;
     size_t StackFramesToSearch=0;
+    size_t max_heap_obj_size=0;
 };
+
 class ArgumentParser{
 private:
     pid_t static pidof(const std::string& program);
     pid_t static pid(const std::string& pidStr);
+
+    //256MB
+    const static size_t DEFAULT_MAX_HEAP_OBJ_SIZE_ = 268435456;
 public:
     struct cliArgs static parseArguments(int argc,char** argv);
 };

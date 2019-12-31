@@ -72,10 +72,20 @@ struct cliArgs ArgumentParser::parseArguments(int argc, char **argv) {
                 SearchEntireStack = true;
             }
             args.StackFramesToSearch =frames;
+            i++; //Assume the number of frames to search in the next argument so don't look at it
             continue;
+        }
+        }
+        if (strncmp(argv[i],"--MaxHeapObjSize",17)==0){
+            args.max_heap_obj_size=std::stoul(argv[i+1]);
         }
         std::cerr << "Unknown parameter provided: \"" << argv[i] << "\" Exiting...\n";
         exit(1);
+    }
+
+    if (args.max_heap_obj_size==0){
+        args.max_heap_obj_size=DEFAULT_MAX_HEAP_OBJ_SIZE_;
+        std::cout << "No max heap object size provided. Defaulting to " << args.max_heap_obj_size << '\n';
     }
 
     //Post parsing validation
