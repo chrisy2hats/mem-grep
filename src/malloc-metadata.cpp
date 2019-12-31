@@ -1,8 +1,12 @@
 #include "malloc-metadata.hpp"
 
-[[nodiscard]] size_t getMallocMetaData(const void *heapAddr, const pid_t pid,const bool printWarnings/*=false*/) {
+using std::cout;
+
+[[nodiscard]] size_t
+getMallocMetaData(const void *heapAddr, const pid_t pid, const size_t max_size, const bool printWarnings/*=false*/) {
     // Gives us a 1 byte heap array containing the 1 byte before heapAddr
-    char *sizePtr = deepCopy(pid, (char *)heapAddr - sizeof(void *), sizeof(void *));
+    char *sizePtr = DeepCopy(
+		    pid, (char *)heapAddr - sizeof(void *), sizeof(void *));
     size_t size = *sizePtr;
     delete[] sizePtr;
 
@@ -16,19 +20,26 @@
     size = (size / 8) * 8;
     if (printWarnings) {
         if (size == 0) {
-            std::cout << "WARNING: malloc'd size reported as 0 for address: " << heapAddr << '\n';
+            cout << "WARNING: malloc'd size reported as 0 for address: " << heapAddr << '\n';
         }
         if (size % 8 != 0) {
-            std::cout << "WARNING: malloc'd size not reported as a multiple of 8 for address: " << heapAddr << '\n';
+            cout << "WARNING: malloc'd size not reported as a multiple of 8 for address: " << heapAddr << '\n';
         }
 
         // Minimum heap chunk in glibc is 4*(sizeof(void*))
         const auto MINIMUM_CHUNK_SIZE = 4 * sizeof(void *);
         if (size < MINIMUM_CHUNK_SIZE) {
-            std::cout
+            cout
                     << "WARNING: malloc'd size reported as less than the minimum glibc should allocate, 4*sizeof(void*). Reported size: "
                     << size << " at address: " << heapAddr << '\n';
         }
+    }
+    if (size > max_size) {
+      if (printWarnings){
+	cout << "WARNING: malloc'd size reported as more than the limit. Reported size:" << size << " limit:"
+	     << max_size << '\n';
+      }
+        size = 0;
     }
 
     return size;

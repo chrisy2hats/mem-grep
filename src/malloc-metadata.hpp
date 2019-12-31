@@ -4,5 +4,5 @@
 #include "deep-copy.hpp"
 
 
-[[nodiscard]] size_t getMallocMetaData(const void *heapAddr, const pid_t pid,const bool printWarnings=false);
+[[nodiscard]] size_t getMallocMetaData(const void *heapAddr, pid_t pid,size_t max_size,bool printWarnings=false);
 #endif
