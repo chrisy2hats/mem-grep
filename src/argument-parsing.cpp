@@ -75,7 +75,6 @@ struct cliArgs ArgumentParser::parseArguments(int argc, char **argv) {
             i++; //Assume the number of frames to search in the next argument so don't look at it
             continue;
         }
-        }
         if (strncmp(argv[i],"--MaxHeapObjSize",17)==0){
             args.max_heap_obj_size=std::stoul(argv[i+1]);
         }

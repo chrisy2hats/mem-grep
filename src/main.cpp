@@ -4,6 +4,7 @@
 #include "stack-searcher.hpp"
 #include "heap-traverser.hpp"
 #include "argument-parsing.hpp"
+#include "utils.hpp"
 
 int main(int argc, char **argv) {
     const struct cliArgs userArgs = ArgumentParser::parseArguments(argc, argv);
@@ -20,34 +21,33 @@ int main(int argc, char **argv) {
     MAPS_ENTRY heapMetadata = parser.getStoredHeap();
     MAPS_ENTRY bss = parser.getStoredBss();
     MAPS_ENTRY data = parser.getStoredData();
-    MAPS_ENTRY text = parser.getStoredText();
+    std::vector<MAPS_ENTRY> text = parser.getStoredText();
 
     if (userArgs.SearchBss) {
-        const auto bssSearcher = BssSearcher((char *) bss.start, (char *) bss.end, userArgs.pid);
+        const auto bssSearcher = BssSearcher((char *) bss.start, (char *) bss.end, userArgs.pid,userArgs.max_heap_obj_size);
         const auto heapPointersInBss = bssSearcher.findHeapPointers(heapMetadata);
 
         std::cout << "Found " << heapPointersInBss.size() << "pointers to the heap from the .bss section\n";
         if (userArgs.TraverseBssPointers) {
-            const auto traversed = HeapTraverser::traverseHeapPointers(heapMetadata, heapPointersInBss, userArgs.pid);
+            const auto traversed = HeapTraverser::TraverseHeapPointers(heapMetadata, heapPointersInBss,userArgs.pid, userArgs.max_heap_obj_size);
             std::cout << "From " << heapPointersInBss.size() << " a further "
-                      << HeapTraverser::heapPointersKnown(traversed) - heapPointersInBss.size()
+                      << HeapTraverser::CountHeapPointers(traversed) - heapPointersInBss.size()
                       << " heap pointers where found by traversing\n";
-            HeapTraverser::printHeap(traversed);
+	    HeapTraverser::PrintHeap(traversed);
         }
     }
     if (userArgs.SearchStack) {
-        const auto stackSearcher = StackSearcher(stack.start, text, userArgs.pid);
+        const auto stackSearcher = StackSearcher(stack.start, text[0], userArgs.pid,userArgs.max_heap_obj_size);
         const auto heapPointersOnStack = stackSearcher.findHeapPointers(stack.end, heapMetadata,
                                                                         userArgs.StackFramesToSearch);
         std::cout << "Found " << heapPointersOnStack.size() << " pointers to the heap on the stack\n";
         if (userArgs.TraverseStackPointers) {
 
-            const auto deepStackPointers = HeapTraverser::traverseHeapPointers(heapMetadata, heapPointersOnStack,
-                                                                               userArgs.pid);
+            const auto deepStackPointers = HeapTraverser::TraverseHeapPointers(heapMetadata, heapPointersOnStack, userArgs.pid, userArgs.max_heap_obj_size);
             std::cout << "From " << heapPointersOnStack.size() << " a further "
-                      << HeapTraverser::heapPointersKnown(deepStackPointers) - heapPointersOnStack.size()
+                      << HeapTraverser::CountHeapPointers(deepStackPointers) - heapPointersOnStack.size()
                       << " heap pointers where found by traversing\n";
-            HeapTraverser::printHeap(deepStackPointers);
+	    HeapTraverser::PrintHeap(deepStackPointers);
         }
     }
 
