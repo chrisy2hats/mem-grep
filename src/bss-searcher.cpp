@@ -3,10 +3,11 @@
 using std::cout;
 using std::endl;
 
-BssSearcher::BssSearcher(const char *actualBssStart,const char* actualBssEnd,const pid_t& pid)
+BssSearcher::BssSearcher(const char *actualBssStart,const char* actualBssEnd,const pid_t& pid,const size_t max_heap_obj)
         : actualBssStart_(actualBssStart),
         actualBssEnd_(actualBssEnd),
-        pid_(pid)
+        pid_(pid),
+        max_heap_obj_(max_heap_obj)
         {}
 
 [[nodiscard]] bool BssSearcher::AddrIsOnHeap(const void *addr, const void *heapStart, const void *heapEnd) const {
@@ -16,7 +17,8 @@ BssSearcher::BssSearcher(const char *actualBssStart,const char* actualBssEnd,con
 
 [[nodiscard]] std::vector<RemoteHeapPointer> BssSearcher::findHeapPointers(const MAPS_ENTRY &heap) const{
     const size_t bssSize = actualBssEnd_ - actualBssStart_;
-    const char* bssCopy = deepCopy(pid_,actualBssStart_,bssSize);
+    const char* bssCopy = DeepCopy(pid_, actualBssStart_, bssSize);
+    assert(bssCopy!=nullptr);
 
     auto matches = std::vector<RemoteHeapPointer>();
     size_t zeroCount = 0, onHeapCount = 0, offHeapCount = 0;
@@ -38,7 +40,7 @@ BssSearcher::BssSearcher(const char *actualBssStart,const char* actualBssEnd,con
 
         if (AddrIsOnHeap(addressPointedTo, heap.start, heap.end)) {
             void *actualAddr =(void*) (actualBssStart_ + i);
-            size_t sizePointedTo = getMallocMetaData(addressPointedTo,pid_);
+            const size_t sizePointedTo = GetMallocMetadata(addressPointedTo, pid_, max_heap_obj_);
             cout << "---------------------------\n";
             cout << "Global pointer to heap memory found\n";
             cout << "Pointer memory is at: " << actualAddr << "\n";

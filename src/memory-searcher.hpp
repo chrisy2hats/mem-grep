@@ -15,9 +15,9 @@ struct SearchMatch {
 template <typename T>
 std::vector<struct SearchMatch> SearchSection(const void *start, const void *end, const pid_t& pid, T to_find) {
   size_t mem_size = (size_t)end - (size_t)start;
-  char *mem_area = deepCopy(pid,start,mem_size);
+  char *mem_area = DeepCopy(pid,start,mem_size);
   if (mem_area == nullptr){
-      std::cout << "deepCopy returned nullptr\n";
+      std::cout << "DeepCopy returned nullptr\n";
       exit(0);
   }
 

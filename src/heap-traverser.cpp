@@ -29,7 +29,7 @@ RemoteHeapPointer HeapTraverser::FollowPointer(const struct MAPS_ENTRY &heap,
       void* actual_address = (char *) base.pointsTo + j;
       const auto pointer_location = (void **)(block_pointed_to + j);
       const auto address_pointed_to = (void *)*pointer_location;
-      const size_t pointed_to_size = getMallocMetaData(address_pointed_to, pid, max_heap_obj);
+      const size_t pointed_to_size = GetMallocMetadata(address_pointed_to, pid, max_heap_obj);
 
       // Checking if a pointer is already visited is required as otherwise if two pointers
       // Point to each other (even indirectly) then this function will get stuck in an infinite loop

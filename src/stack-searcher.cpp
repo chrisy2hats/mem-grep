@@ -2,12 +2,13 @@
 
 using std::cout;
 
-StackSearcher::StackSearcher(const void *stackStart, const MAPS_ENTRY &text,const pid_t pid)
+StackSearcher::StackSearcher(const void *stackStart, const MAPS_ENTRY &text, const pid_t pid, const size_t max_heap_obj)
         : stackStart_(stackStart),
           textStart_(text.start),
           textEnd_(text.end),
           textSize_((char *) text.start - (char *) text.end),
-          pid_(pid){}
+          pid_(pid),
+          max_heap_obj_(max_heap_obj) {}
 
 //If the address is within the .text part of the target binary
 [[nodiscard]]bool StackSearcher::AddrIsInText(const void *addr) const {
@@ -28,14 +29,14 @@ StackSearcher::findHeapPointers(const void *curStackEnd, const MAPS_ENTRY &heap,
     }
     size_t framesSearched = 0;
 
-    const size_t curStackSize = (char*)curStackEnd - (char*)  stackStart_;
-    const char* stackCopy = deepCopy(pid_,stackStart_,curStackSize);
+    const size_t curStackSize = (char *) curStackEnd - (char *) stackStart_;
+    const char *stackCopy = DeepCopy(pid_, stackStart_, curStackSize);
 
     auto matches = std::vector<RemoteHeapPointer>();
     size_t zeroCount = 0;
     for (size_t i = 0; i < curStackSize; i += (sizeof(void *))) {
         size_t current = 0;
-        memcpy(&current, (char*)stackCopy+ i, sizeof(void *));
+        memcpy(&current, (char *) stackCopy + i, sizeof(void *));
         if (current == 0) {
             zeroCount++;
             continue;
@@ -49,18 +50,18 @@ StackSearcher::findHeapPointers(const void *curStackEnd, const MAPS_ENTRY &heap,
         }
         then pointerLocation is &x and addressPointedTo is x
         */
-        auto pointerLocation = (void **) ((char*)stackCopy+ i);
+        auto pointerLocation = (void **) ((char *) stackCopy + i);
         auto addressPointedTo = (void *) *pointerLocation;
 
 
         if (AddrIsOnHeap(addressPointedTo, heap.start, heap.end)) {
-            void *actualAddr = (void *) ((char*)stackStart_ + i);
-            size_t sizePointedTo = getMallocMetaData(addressPointedTo, pid_, true);
+            void *actualAddr = (void *) ((char *) stackStart_ + i);
+            size_t sizePointedTo = GetMallocMetadata(addressPointedTo, pid_, max_heap_obj_, true);
             cout << "---------------------------\n";
             cout << "Global pointer to heap memory found\n";
             cout << "Pointer memory is at: " << actualAddr << "\n";
             cout << "Which points to : " << addressPointedTo << "\n";
-            cout << "Pointer found at .bss offset:" << i << "\n";
+            cout << "Pointer found at stack offset:" << i << "\n";
             cout << "Which points to block of size:" << sizePointedTo << "\n";
             cout << "---------------------------\n";
             const struct RemoteHeapPointer result = {actualAddr, addressPointedTo, sizePointedTo};
@@ -69,7 +70,7 @@ StackSearcher::findHeapPointers(const void *curStackEnd, const MAPS_ENTRY &heap,
         } else if (AddrIsInText(addressPointedTo)) {
             std::cout << "Frame end found return addr to :" << addressPointedTo << "\n";
             framesSearched++;
-            if (framesSearched > framesToSearch){
+            if (framesSearched > framesToSearch) {
                 break;
             }
         }
