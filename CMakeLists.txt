@@ -2,7 +2,7 @@ cmake_minimum_required(VERSION 3.00)
 project(mem-analyze)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -fpermissive")
+set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -fpermissive -g")
 set(EXECUTABLE_OUTPUT_PATH "out")
 
 add_executable(mem-analyze
@@ -17,7 +17,8 @@ add_executable(mem-analyze
         src/stack-searcher.cpp src/stack-searcher.hpp
         src/heap-traverser.cpp src/heap-traverser.hpp
         src/argument-parsing.cpp src/argument-parsing.hpp
-        )
+        src/utils.cpp src/utils.hpp
+	)
 
 
 #Programs for manual testing
