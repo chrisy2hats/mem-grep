@@ -10,23 +10,20 @@ MapParser::MapParser(const pid_t pid) :
 }
 
 std::string MapParser::GetExecutablePath() {
-    const string exe_containing_file = "/proc/" + std::to_string(pid_) + "/exe";
-    std::cout << "Obtaining executable location from:" << exe_containing_file << "\n";
+  const string exe_containing_file = "/proc/" + std::to_string(pid_) + "/exe";
+  std::cout << "Obtaining executable location from:" << exe_containing_file << "\n";
 
-    char* buffer=new char[PATH_MAX];
-    ssize_t nread = readlink(exe_containing_file.c_str(), buffer, PATH_MAX);
-    assert(nread!=0);
-    if (errno){
-        std::cerr << "Unhandled error whilst getting location inside:" << exe_containing_file << "\n";
-        exit(1);
-    }
-
-    const std::string exe_path(buffer);
-    assert(!exe_path.empty());
-    assert(exe_path.at(0)=='/');
-
-    delete[] buffer;
-    return exe_path;
+  char buff[PATH_MAX];
+  ssize_t len = ::readlink(exe_containing_file.c_str(), buff, sizeof(buff) - 1);
+  if (len != -1) {
+    buff[len] = '\0';
+    const auto exe = std::string(buff);
+    assert(!exe.empty());
+    assert(exe.at(0) == '/');
+    return exe;
+  }
+  std::cout << "Failed to obtain executable location for PID:" << pid_ << std::endl;
+  exit(1);
 }
 
 [[nodiscard]] std::vector<struct MAPS_ENTRY> MapParser::ParseMap() {
