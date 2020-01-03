@@ -17,8 +17,9 @@ std::vector<struct SearchMatch> SearchSection(const void *start, const void *end
   size_t mem_size = (size_t)end - (size_t)start;
   char *mem_area = DeepCopy(pid,start,mem_size);
   if (mem_area == nullptr){
-      std::cout << "DeepCopy returned nullptr\n";
-      exit(0);
+      std::cerr << "DeepCopy returned nullptr\n";
+      delete[] mem_area;
+      return {};
   }
 
   auto results = std::vector<struct SearchMatch>();
