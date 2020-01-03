@@ -1,11 +1,11 @@
 cmake_minimum_required(VERSION 3.00)
-project(mem-analyze)
+project(mem-grep)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -fpermissive -g")
 set(EXECUTABLE_OUTPUT_PATH "out")
 
-add_executable(mem-analyze
+add_executable(mem-grep
         src/main.cpp
         src/map-parser.cpp src/map-parser.hpp
         src/memory-searcher.hpp
@@ -54,6 +54,7 @@ add_executable(unit-tests
         src/bss-searcher.cpp src/bss-searcher.hpp
         src/malloc-metadata.cpp src/malloc-metadata.hpp
         src/heap-traverser.cpp src/heap-traverser.hpp
+        tests/null-structs.cpp
         )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -pedantic")
@@ -90,5 +91,5 @@ add_custom_target(cppcheck
         COMMAND rm -rf report 2>/dev/null
         COMMAND mkdir report
         COMMAND cppcheck --enable=all --suppress=missingIncludeSystem --xml --xml-version=2 ./src 2>report/report-src.xml
-        COMMAND cppcheck-htmlreport --source-dir=. --title=mem-analyse --file=report/report-src.xml --report-dir=report
+        COMMAND cppcheck-htmlreport --source-dir=. --title=mem-grep --file=report/report-src.xml --report-dir=report
         )
