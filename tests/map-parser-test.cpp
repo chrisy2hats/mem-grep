@@ -11,7 +11,7 @@
 
 
 //ParseMap isn't called on this MapParser to the PID can be anything
-const MapParser mp = MapParser(0);
+const MapParser mp = MapParser(getpid());
 
 TEST_CASE("Stack map entry parsing") {
     auto line = "7ffd6ff40000-7ffd6ff61000 rw-p 00000000 00:00 0                          [stack]";
@@ -101,7 +101,7 @@ TEST_CASE("Small x64_64 asm program"){
     std::vector<MAPS_ENTRY> results;
     int pid;
     if ((pid=fork())==0){
-        execl(asmProgPath,NULL);
+        execl(asmProgPath,"");
     }else {
         //Give the kernel a chance to load the process and initialise the /proc/maps file
         sleep(1);

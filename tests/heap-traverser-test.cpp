@@ -10,7 +10,7 @@ TEST_CASE("Multi-layered bss pointers") {
     int pid;
     if ((pid = fork()) == 0) {
         const auto targetPath = "./multiLayeredBssHeapPointers";
-        execl(targetPath, NULL);
+        execl(targetPath, "");
     } else {
 //Give the kernel a chance to load the process and initialise the /proc/maps file
 //A way to avoid sleep but ensuring that the program has been loaded would be ideal but this works
@@ -23,28 +23,21 @@ TEST_CASE("Multi-layered bss pointers") {
 
         struct MAPS_ENTRY heapMetadata = NULL_MAPS_ENTRY;
         struct MAPS_ENTRY bss = NULL_MAPS_ENTRY;
-
-        for (const auto &entry : maps) {
-            if (entry.file_path == "[heap]") {
-                heapMetadata = entry;
-            }
-            if (entry.file_path == ".bss") {
-                bss = entry;
-            }
-        }
+        heapMetadata=parser.getStoredHeap();
+        bss=parser.getStoredBss();
         const size_t bssSize = (char *) bss.end - (char *) bss.start;
 
         //If bssSize is close to a size_t max it overflowed as a bssSize of approaching 2**64 will never happen
         REQUIRE(bssSize < (UINTMAX_MAX-128));
-        const char *bssCopy = deepCopy(pid, bss.start, bssSize);
+        const char *bssCopy = DeepCopy(pid, bss.start, bssSize);
         REQUIRE(bssCopy != nullptr);
-        auto b = BssSearcher((char*)bss.start,(char*)bss.end,pid);
+        auto b = BssSearcher((char*)bss.start,(char*)bss.end,pid,2048);
 
         auto heapPointers = b.findHeapPointers(heapMetadata);
         REQUIRE(heapPointers.size() == 3);
         delete[] bssCopy;
-        auto deepPointers = HeapTraverser::traverseHeapPointers(heapMetadata, heapPointers, pid);
-        REQUIRE(HeapTraverser::heapPointersKnown(deepPointers)==9);
+        auto deepPointers = HeapTraverser::TraverseHeapPointers(heapMetadata, heapPointers, pid, 2048);
+        REQUIRE(HeapTraverser::CountHeapPointers(deepPointers)==9);
 
         kill(pid, SIGKILL);
     }

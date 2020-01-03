@@ -44,7 +44,7 @@ TEST_CASE("Find Value on heap") {
     int pid;
     if ((pid = fork()) == 0) {
         const auto targetPath = "./runUntilManipulatedHeap";
-        execl(targetPath, NULL);
+        execl(targetPath, "");
     } else {
         //Give the kernel a chance to load the process and initialise the /proc/maps file
         //A way to avoid sleep but ensuring that the program has been loaded would be ideal but this works
@@ -55,19 +55,13 @@ TEST_CASE("Find Value on heap") {
         auto parser = MapParser(pid);
         auto maps = parser.ParseMap();
 
-        struct MAPS_ENTRY heap;
-        for (const auto &i : maps) {
-            if (i.file_path == "[heap]") {
-                heap = i;
-            }
-        }
+        struct MAPS_ENTRY heap = parser.getStoredHeap();
 
         REQUIRE(heap.start != NULL_MAPS_ENTRY.start);
         REQUIRE(heap.end != NULL_MAPS_ENTRY.end);
         const uint32_t to_find = 127127;
         void *start = (void *) heap.start;
         void *end = (void *) heap.end;
-        sleep(1);
         auto results = SearchSection(start, end, pid, to_find);
 
         REQUIRE(results.size() == 1);
@@ -80,7 +74,7 @@ TEST_CASE("Find Value on stack") {
     int pid;
     if ((pid = fork()) == 0) {
         const auto targetPath = "./runUntilManipulatedStack";
-        execl(targetPath, NULL);
+        execl(targetPath, "");
     } else {
         //Give the kernel a chance to load the process and initialise the /proc/maps file
         //A way to avoid sleep but ensuring that the program has been loaded would be ideal but this works
