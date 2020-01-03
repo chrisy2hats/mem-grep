@@ -32,6 +32,8 @@ struct MAPS_ENTRY {
   std::string file_path;
 };
 
+std::ostream& operator << (std::ostream &o, const MAPS_ENTRY& m);
+
 class MapParser {
  public:
   explicit MapParser(pid_t pid);

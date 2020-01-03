@@ -9,6 +9,17 @@ MapParser::MapParser(const pid_t pid) :
     executable_path_ = GetExecutablePath();
 }
 
+std::ostream& operator << (std::ostream &o, const MAPS_ENTRY& m){
+  o << "start : " << m.start
+  << "\nend : " << m.end
+  << "\npermissions : " << m.permissions
+  << "\noffset : " << m.offset
+  << "\ndevice : " << m.device
+  << "\ninode : " << m.inode
+  << "\nfile_path : " << m.file_path << "\n";
+  return o;
+}
+
 std::string MapParser::GetExecutablePath() {
   const string exe_containing_file = "/proc/" + std::to_string(pid_) + "/exe";
   std::cout << "Obtaining executable location from:" << exe_containing_file << "\n";
