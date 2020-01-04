@@ -53,11 +53,12 @@ class MapParser {
  protected:
  private:
   const pid_t pid_;
+  const struct MAPS_ENTRY kEmptyMapsEntry =  {nullptr,nullptr,"","","","",""};
 
-  struct MAPS_ENTRY stack_;
-  struct MAPS_ENTRY heap_;
-  struct MAPS_ENTRY bss_;
-  struct MAPS_ENTRY data_;
+  struct MAPS_ENTRY stack_ = kEmptyMapsEntry;
+  struct MAPS_ENTRY heap_ = kEmptyMapsEntry;
+  struct MAPS_ENTRY bss_ = kEmptyMapsEntry;
+  struct MAPS_ENTRY data_ = kEmptyMapsEntry;
   std::vector<struct MAPS_ENTRY> text_sections_;
   std::vector<struct MAPS_ENTRY> mmap_sections_;
   std::string executable_path_;

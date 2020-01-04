@@ -57,7 +57,7 @@ TEST_CASE("0 pointers target program"){
         bss0= parser0.getStoredBss();
 
         REQUIRE(bss0!=NULL_MAPS_ENTRY);
-        REQUIRE(heapMetadata0!=NULL_MAPS_ENTRY);
+        REQUIRE(heapMetadata0==NULL_MAPS_ENTRY);
         const auto b0 = BssSearcher((char*)bss0.start,(char*)bss0.end, pid0,2048);
         const auto heapPointers0 = b0.findHeapPointers(heapMetadata0);
 
