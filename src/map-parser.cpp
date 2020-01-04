@@ -33,7 +33,8 @@ std::string MapParser::GetExecutablePath() {
     assert(exe.at(0) == '/');
     return exe;
   }
-  std::cout << "Failed to obtain executable location for PID:" << pid_ << std::endl;
+  std::cerr << "Failed to obtain executable location for PID:" << pid_ << std::endl;
+  std::cerr << "Error string:" << strerror(errno) << std::endl;
   exit(1);
 }
 
