@@ -1,0 +1,163 @@
+
+//Jenkins plugins needed:
+//Valgrind docker pipelines cppcheck
+
+//Slave config needed:
+//The build slave must have docker accsible to the user that is running jenkins. Most likely the "jenkins" user
+//Add them to the docker group via "usermod -a -G docker jenkins" as root
+//The slave also needed ptrace scope set to 0 in /proc/sys/kernel/yama/ptrace_scope on the host (NOT in the container)
+
+
+Map BuildParams = [ 
+        RepoURL             : "https://github.com/chrisfoster4/mem-grep",
+        Branch              : "master",
+        WorkDir             : "/tmp/mem-grep_${env.BUILD_NUMBER}",
+        InstallCommand      : "apt-get update && apt-get install -y",
+        Dependencies        : "cmake make git gcc g++ cppcheck python-pygments valgrind nasm binutils",
+        Container           : "ubuntu:18.04",
+        ProjectName         : "mem-grep",
+        TargetPrograms      : ["multiLayeredBssHeapPointers", "onheapint", "onstackint", "runUntilManipulatedHeap", "runUntilManipulatedStack", "asmTarget", "bssHeapPointers"]
+        ] as HashMap
+               
+label "master"
+pipeline {
+    agent {
+        docker { 
+            image "${BuildParams.Container}"
+            
+            //Priviledges needed for reading other processes memory even if both processes are inside the same container
+            args '--privileged -u root'
+            customWorkspace "${BuildParams.WorkDir}"
+        }
+    }
+    options{
+        buildDiscarder(logRotator(numToKeepStr: '14'))
+        timeout(time: 5, unit: 'MINUTES') 
+    }
+    stages{
+        stage("Install Dependencies"){
+            steps{
+                script{
+                    currentBuild.displayName = "${env.BUILD_NUMBER}"
+                    currentBuild.description = "${env.NODE_NAME}"
+                }
+                sh "${BuildParams.InstallCommand} ${BuildParams.Dependencies}"
+            }
+        }
+        stage("Git Clone"){
+            steps{
+                
+               git url: "${BuildParams.RepoURL}", branch: "${BuildParams.Branch}"
+               
+               //For Catch2 submodule
+               sh "git submodule update --init --recursive"
+            }
+        }
+        stage("CMake"){
+            steps{
+                sh "cmake ."
+            }
+        }
+        stage("Build - mem-grep"){
+            steps{
+                sh "make -j \$(nproc) mem-grep"
+            }
+        }
+        stage("Build - Target Programs"){
+            steps{
+                script {
+                    BuildParams.TargetPrograms.each { program ->
+                        sh "make -j \$(nproc) ${program}"
+                    }
+                }
+            }
+        }
+        stage("Build Unit Tests"){
+            steps{
+                sh "make -j \$(nproc) unit-tests"    
+            }
+        }
+        stage("Run Unit Tests"){
+            steps{
+                dir ("out"){
+                    //Run only the prerun checks to ensure the CI environment is configured correctly
+                    echo "Running prerun unit-tests"
+                    sh "./unit-tests *prerun*"
+                
+                    echo "Running all other unit-tests"
+                    sh "./unit-tests ~*prerun* "
+                }
+            }
+        }
+       
+        stage("Valgrind"){
+            steps{
+                echo "Valgrind"
+
+                sh "mkdir valgrindOut"
+
+                script{
+                    BuildParams.TargetPrograms.each { program ->
+                    
+                    echo "Launching ${program}"
+                    sh "./out/${program} &"
+
+                    script{
+                        BuildParams.ValgrindTargetPid = sh(returnStdout:true, script: "pidof -s ${program}")    
+                    }
+                    echo "PID=${BuildParams.ValgrindTargetPid}"
+    
+
+                    echo "Running Valgrind on ${program}"
+                        runValgrind (
+                            childSilentAfterFork: true,
+                            excludePattern: '',
+                            generateSuppressions: true,
+                            ignoreExitCode: false,
+                            includePattern: 'out/mem-grep',
+                            outputDirectory: 'valgrindOut',
+                            outputFileEnding: '.memcheck',
+                            programOptions: "--pid ${BuildParams.ValgrindTargetPid} --SearchBss --SearchStack --TraverseBss --TraverseStack",
+                            
+                            //It thinks reports from previous loop iterations are from previous runs. They aren't as we have a fresh build dir every run
+                            removeOldReports: false, 
+                            suppressionFiles: '',
+                            tool: [$class: 'ValgrindToolMemcheck',
+                                leakCheckLevel: 'full',
+                                showReachable: true,
+                                trackOrigins: true,
+                                undefinedValueErrors: true],
+                            traceChildren: true,
+                            valgrindExecutable: '',
+                            valgrindOptions: '',
+                            workingDirectory: 'valgrind'
+                        )
+                    }
+                }
+        
+        
+                publishValgrind (
+                    failBuildOnInvalidReports: true,
+                    failBuildOnMissingReports: true,
+                    failThresholdDefinitelyLost: '1',
+                    failThresholdInvalidReadWrite: '1',
+                    failThresholdTotal: '1',
+                    pattern: 'valgrindOut/*.memcheck',
+                    publishResultsForAbortedBuilds: false,
+                    publishResultsForFailedBuilds: false,
+                    sourceSubstitutionPaths: '',
+                    unstableThresholdDefinitelyLost: '1',
+                    unstableThresholdInvalidReadWrite: '1',
+                    unstableThresholdTotal: '1'
+                )
+    
+            }
+        }
+        stage("CppCheck"){
+            steps{
+            	sh "make cppcheck"
+            	//TODO do something with the report files. Attach them if errors are generated?
+            }
+        }
+    }
+}
