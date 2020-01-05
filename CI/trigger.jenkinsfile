@@ -1,0 +1,60 @@
+
+//Tick boxes for each configured distribution. The required parameters are passed to the main pipeline for each distro.
+
+Map DebianParams = [
+    Container: "debian:stretch",
+    InstallCommand: "apt-get update && apt-get install -y cmake make git gcc g++ cppcheck python-pygments valgrind nasm binutils",
+] as HashMap
+
+Map UbuntuParams = [
+    Container: "ubuntu:18.04",
+    InstallCommand: "${DebianParams.InstallCommand}",
+] as HashMap
+
+Map FedoraParams = [
+    Container: "fedora:31",
+    InstallCommand: "yum update -y && yum install -y cmake make git gcc g++ cppcheck python-pygments valgrind nasm binutils",
+] as HashMap
+
+pipeline{
+    agent{
+        label "master"
+    }
+    options{
+      buildDiscarder(logRotator(numToKeepStr: '5'))
+      
+      //Enough time for all the called pipelines to run
+      timeout(time: 60, unit: 'MINUTES')
+    }
+    parameters{
+        booleanParam(name: 'RunUbuntu', defaultValue: 'true', description: 'Run a build in an Ubuntu container?')
+        booleanParam(name: 'RunDebian', defaultValue: 'true', description: 'Run a build in an Debian container?')
+        booleanParam(name: 'RunFedora', defaultValue: 'true', description: 'Run a build in an Fedora container?')
+    }
+    stages{
+        stage("Build Pipeline - Ubuntu"){
+            when{
+                expression { return params.RunUbuntu }
+            }
+            steps{
+                build job: 'build-pipeline', parameters: [string(name: 'Container', value:"${UbuntuParams.Container}"), string(name: 'InstallCommand',value:"${UbuntuParams.InstallCommand}")], wait: true, propagate: false
+            }
+        }
+        stage("Build Pipeline - Debian"){
+            when{
+                expression { return params.RunDebian}
+            }
+            steps{
+                build job: 'build-pipeline', parameters: [string(name: 'Container', value:"${DebianParams.Container}"), string(name: 'InstallCommand',value:"${DebianParams.InstallCommand}")], wait: true, propagate: false
+            }
+        }
+        stage("Build Pipeline - Fedora"){
+            when{
+                expression { return params.RunFedora }
+            }
+            steps{
+                build job: 'build-pipeline', parameters: [string(name: 'Container', value:"${FedoraParams.Container}"), string(name: 'InstallCommand',value:"${FedoraParams.InstallCommand}")], wait: true, propagate: false
+            }
+        }
+    }
+}
