@@ -2,7 +2,7 @@
 //Tick boxes for each configured distribution. The required parameters are passed to the main pipeline for each distro.
 
 Map DebianParams = [
-    Container: "debian:stretch",
+    Container: "debian:buster",
     InstallCommand: "apt-get update && apt-get install -y cmake make git gcc g++ cppcheck python-pygments valgrind nasm binutils",
 ] as HashMap
 
