@@ -7,6 +7,10 @@ std::vector<RemoteHeapPointer> HeapTraverser::TraverseHeapPointers( const struct
 		std::vector<RemoteHeapPointer> base_pointers, const pid_t &pid,
 		const size_t max_heap_obj)
 {
+  if (base_pointers.empty()) {
+    std::cerr << "WARNING: HeapTraverser asked to traverse a empty list of pointers.\n";
+    return {};
+  }
   std::vector<void *> already_visited = {};
   for (auto& pointer : base_pointers) {
     pointer = HeapTraverser::FollowPointer(heap, pointer, pid, max_heap_obj, already_visited);

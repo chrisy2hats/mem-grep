@@ -27,6 +27,10 @@ StackSearcher::StackSearcher(const void *stackStart, const MAPS_ENTRY &text, con
 
 std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(const void *curStackEnd, const MAPS_ENTRY &heap, size_t framesToSearch) const
 {
+  // Every program has a stack so these should never be null
+  assert(stackStart_!=nullptr);
+  assert(curStackEnd!=nullptr);
+
   if (framesToSearch == 0) {
     framesToSearch = UINTMAX_MAX;
   }

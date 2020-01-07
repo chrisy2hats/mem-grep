@@ -8,7 +8,11 @@ BssSearcher::BssSearcher(const char *actualBssStart,const char* actualBssEnd,con
         actualBssEnd_(actualBssEnd),
         pid_(pid),
         max_heap_obj_(max_heap_obj)
-        {}
+        {
+  	  if(actualBssStart_ == nullptr || actualBssEnd_ == nullptr){
+  	    std::cerr << "WARNING: BssSearcher initialised with a nullptr. All searches will return 0 results\n";
+  	  }
+	}
 
 [[nodiscard]] bool BssSearcher::AddrIsOnHeap(const void *addr, const void *heapStart, const void *heapEnd) const {
     const bool IsOnHeap = addr >= heapStart && addr <= heapEnd;
@@ -16,6 +20,11 @@ BssSearcher::BssSearcher(const char *actualBssStart,const char* actualBssEnd,con
 }
 
 [[nodiscard]] std::vector<RemoteHeapPointer> BssSearcher::findHeapPointers(const MAPS_ENTRY &heap) const{
+    if (actualBssStart_ == nullptr || actualBssEnd_ == nullptr){
+      // No need to print error message as the constructor will have if any parameter is null
+      return {};
+    }
+
     const size_t bssSize = actualBssEnd_ - actualBssStart_;
     const char* bssCopy = DeepCopy(pid_, actualBssStart_, bssSize);
     assert(bssCopy!=nullptr);
