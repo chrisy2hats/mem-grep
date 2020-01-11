@@ -4,6 +4,7 @@
 #include "../src/map-parser.hpp"
 #undef UNIT_TEST
 #include "null-structs.hpp"
+#include "utils.hpp"
 
 #include <string>
 #include <csignal>
@@ -86,8 +87,6 @@ TEST_CASE("Garbage input line parsing") {
     REQUIRE(lineRes.file_path == "");
 }
 TEST_CASE("Small x64_64 asm program"){
-
-
     /*Example maps file for small asm program. Note no heap
     00400000-00401000 r-xp 00000000 fd:01 9452734                            /home/foobar/mem-analyse/target-programs/redzone-user/write
     7ffc74a2a000-7ffc74a4b000 rwxp 00000000 00:00 0                          [stack]
@@ -96,35 +95,21 @@ TEST_CASE("Small x64_64 asm program"){
     ffffffffff600000-ffffffffff601000 r-xp 00000000 00:00 0                  [vsyscall]
      */
 
-    const auto asmProgName = "asmTarget";
     const auto asmProgPath = "./asmTarget";
-    std::vector<MAPS_ENTRY> results;
-    int pid;
-    if ((pid=fork())==0){
-        execl(asmProgPath,"");
-    }else {
-        //Give the kernel a chance to load the process and initialise the /proc/maps file
-        sleep(1);
-        auto parser = MapParser(pid);
-        results = parser.ParseMap();
+    pid_t pid = launchProgram(asmProgPath);
 
-        kill(pid, SIGKILL);
-    }
+    auto parser = MapParser(pid);
+    auto results = parser.ParseMap();
 
     struct MAPS_ENTRY stack = NULL_MAPS_ENTRY;
     struct MAPS_ENTRY heap = NULL_MAPS_ENTRY;
-    for (const MAPS_ENTRY& i : results){
-        if (i.file_path=="[stack]"){
-            stack=i;
-        }
-        if (i.file_path=="[heap]"){
-            heap=i;
-        }
-    }
+    stack=parser.getStoredStack();
+    heap=parser.getStoredHeap();
 
-    REQUIRE(results[0].file_path.find(asmProgName) != std::string::npos);
-    REQUIRE(stack.start != NULL_MAPS_ENTRY.start);
-
+    REQUIRE(results[0].file_path.find("asmTarget") != std::string::npos);
     //This asm program makes 0 heap allocations
     REQUIRE(heap.start == NULL_MAPS_ENTRY.start);
+    REQUIRE(stack.start != NULL_MAPS_ENTRY.start);
+
+    kill(pid, SIGKILL);
 }

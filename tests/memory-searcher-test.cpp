@@ -5,6 +5,7 @@
 #include "../src/memory-searcher.hpp"
 #include "../src/map-parser.hpp"
 #include "null-structs.hpp"
+#include "utils.hpp"
 
 TEST_CASE("Search for NULL"){
     const pid_t self = getpid();
@@ -39,65 +40,45 @@ TEST_CASE("Search for float"){
     delete[] memArea;
 }
 
-
 TEST_CASE("Find Value on heap") {
-    int pid;
-    if ((pid = fork()) == 0) {
-        const auto targetPath = "./runUntilManipulatedHeap";
-        execl(targetPath, "");
-    } else {
-        //Give the kernel a chance to load the process and initialise the /proc/maps file
-        //A way to avoid sleep but ensuring that the program has been loaded would be ideal but this works
+  const auto targetPath = "./runUntilManipulatedHeap";
+  pid_t pid = launchProgram(targetPath);
+  std::cout << "Analysing PID:" << pid << std::endl;
 
-        sleep(1);
-        std::cout << "Analysing PID:" << pid << std::endl;
+  auto parser = MapParser(pid);
+  auto maps = parser.ParseMap();
 
-        auto parser = MapParser(pid);
-        auto maps = parser.ParseMap();
+  struct MAPS_ENTRY heap = parser.getStoredHeap();
 
-        struct MAPS_ENTRY heap = parser.getStoredHeap();
+  REQUIRE(heap.start != NULL_MAPS_ENTRY.start);
+  REQUIRE(heap.end != NULL_MAPS_ENTRY.end);
+  const uint32_t to_find = 127127;
+  void *start = (void *)heap.start;
+  void *end = (void *)heap.end;
+  auto results = SearchSection(start, end, pid, to_find);
 
-        REQUIRE(heap.start != NULL_MAPS_ENTRY.start);
-        REQUIRE(heap.end != NULL_MAPS_ENTRY.end);
-        const uint32_t to_find = 127127;
-        void *start = (void *) heap.start;
-        void *end = (void *) heap.end;
-        auto results = SearchSection(start, end, pid, to_find);
-
-        REQUIRE(results.size() == 1);
-        kill(pid, SIGKILL);
-    }
+  REQUIRE(results.size() == 1);
+  kill(pid, SIGKILL);
 }
 
+TEST_CASE("Find Value on stack")
+{
+  const auto targetPath = "./runUntilManipulatedStack";
+  pid_t pid = launchProgram(targetPath);
 
-TEST_CASE("Find Value on stack") {
-    int pid;
-    if ((pid = fork()) == 0) {
-        const auto targetPath = "./runUntilManipulatedStack";
-        execl(targetPath, "");
-    } else {
-        //Give the kernel a chance to load the process and initialise the /proc/maps file
-        //A way to avoid sleep but ensuring that the program has been loaded would be ideal but this works
-        sleep(1);
+  std::cout << "Analysing PID:" << pid << std::endl;
+  auto parser = MapParser(pid);
+  auto maps = parser.ParseMap();
+  struct MAPS_ENTRY stack = NULL_MAPS_ENTRY;
+  stack = parser.getStoredStack();
 
-        std::cout << "Analysing PID:" << pid << std::endl;
-        auto parser = MapParser(pid);
-        auto maps = parser.ParseMap();
-        struct MAPS_ENTRY stack;
-        for (const auto &i : maps) {
-            if (i.file_path == "[stack]") {
-                stack = i;
-            }
-        }
+  REQUIRE(stack.start != NULL_MAPS_ENTRY.start);
+  REQUIRE(stack.end != NULL_MAPS_ENTRY.end);
+  const uint32_t to_find = 127127;
+  void *start = (void *)stack.start;
+  void *end = (void *)stack.end;
+  auto results = SearchSection(start, end, pid, to_find);
 
-        REQUIRE(stack.start != NULL_MAPS_ENTRY.start);
-        REQUIRE(stack.end != NULL_MAPS_ENTRY.end);
-        const uint32_t to_find = 127127;
-        void *start = (void *) stack.start;
-        void *end = (void *) stack.end;
-        auto results = SearchSection(start, end, pid, to_find);
-
-        REQUIRE(results.size() == 1);
-        kill(pid, SIGKILL);
-    }
+  REQUIRE(results.size() == 1);
+  kill(pid, SIGKILL);
 }
