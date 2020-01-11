@@ -13,7 +13,7 @@ Map UbuntuParams = [
 
 Map FedoraParams = [
     Container: "fedora:31",
-    InstallCommand: "yum update -y && yum install -y cmake make git gcc g++ cppcheck python-pygments valgrind nasm binutils",
+    InstallCommand: "yum update -y && yum install -y cmake make git gcc g++ cppcheck python-pygments valgrind nasm binutils procps",
 ] as HashMap
 
 pipeline{
