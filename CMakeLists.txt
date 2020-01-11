@@ -55,6 +55,7 @@ add_executable(unit-tests
         src/malloc-metadata.cpp src/malloc-metadata.hpp
         src/heap-traverser.cpp src/heap-traverser.hpp
         tests/null-structs.cpp
+        tests/utils.cpp tests/utils.hpp
         )
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -pedantic")
