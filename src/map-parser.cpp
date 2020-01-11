@@ -144,7 +144,7 @@ bool MapParser::IsHeapEntry(const MAPS_ENTRY &entry) const {
 }
 
 bool MapParser::IsStackEntry(const MAPS_ENTRY &entry) const {
-    return IsReadable(entry) && IsWriteable(entry) && !IsExecutable(entry) && entry.file_path == "[stack]";
+    return IsReadable(entry) && IsWriteable(entry) && entry.file_path == "[stack]";
 }
 
 //Mmaped regions don't have a file path associated
