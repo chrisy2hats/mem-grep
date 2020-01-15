@@ -59,10 +59,12 @@ struct cliArgs ArgumentParser::parseArguments(int argc, char **argv) {
             continue;
         }
         if (strncmp(argv[i], "--TraverseBss", 14) == 0) {
+            args.SearchBss = true;
             args.TraverseBssPointers = true;
             continue;
         }
         if (strncmp(argv[i], "--TraverseStack", 16) == 0) {
+            args.SearchStack = true;
             args.TraverseStackPointers = true;
             continue;
         }
