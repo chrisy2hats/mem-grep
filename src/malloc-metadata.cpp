@@ -6,7 +6,7 @@ using std::cerr;
 [[nodiscard]] size_t GetMallocMetadata(const void *heap_address, const pid_t pid, const size_t max_size, const bool print_warnings /*=false*/) {
     // Gives us a 1 byte heap array containing the 1 byte before heap_address
     char* size_ptr = DeepCopy( pid, (char *)heap_address - sizeof(void *), sizeof(void *));
-    size_t size = *size_ptr;
+    size_t size = *(reinterpret_cast<size_t*>(size_ptr));
     delete[] size_ptr;
 
     // The 3 least significant bits of the size are flags not the actual size
