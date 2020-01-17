@@ -6,20 +6,20 @@ UseTab: Always
 BreakBeforeBraces: Custom
 Standard: Cpp11
 BraceWrapping:
-  AfterClass: true
+  AfterClass: false
   AfterControlStatement: false
-  AfterEnum: true
-  AfterFunction: true
-  AfterNamespace: true
-  AfterStruct: true
-  AfterUnion: true
+  AfterEnum: false
+  AfterFunction: false
+  AfterNamespace: false
+  AfterStruct: false
+  AfterUnion: false
   BeforeCatch: false
   BeforeElse: false
 FixNamespaceComments: false
 AllowShortIfStatementsOnASingleLine: false
 IndentCaseLabels: false
 AccessModifierOffset: -8
-ColumnLimit: 80
+ColumnLimit: 100
 AllowShortFunctionsOnASingleLine: InlineOnly
 SortIncludes: false
 IncludeCategories:
