@@ -72,7 +72,7 @@ std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(const void *curSt
 	cout << "Which points to : " << addressPointedTo << "\n";
 	cout << "Pointer found at stack offset:" << i << "\n";
 	cout << "---------------------------\n";
-	const struct RemoteHeapPointer result = {actualAddr, addressPointedTo, .sizePointedTo = 0};
+	const struct RemoteHeapPointer result = {actualAddr, addressPointedTo, .size_pointed_to = 0};
 	matches.push_back(result);
       } else {
 	size_t sizePointedTo = GetMallocMetadata(addressPointedTo, pid_, max_heap_obj_, true);

@@ -17,7 +17,7 @@ size_t HeapTraverser::CountPointers( const std::vector<RemoteHeapPointer>& baseP
 {
   size_t total = 0;
   for (const auto &i : basePointers) {
-    total += i.totalSubPointers;
+    total += i.total_sub_pointers;
   }
   total += basePointers.size();
   return total;
@@ -25,12 +25,12 @@ size_t HeapTraverser::CountPointers( const std::vector<RemoteHeapPointer>& baseP
 
 void HeapTraverser::PrintPointer(const RemoteHeapPointer& p, int indent_level/*=0*/)
 {
-  for (const auto &i : p.containsPointersTo) {
+  for (const auto &i : p.contains_pointers_to) {
     for (int j = 0; j < indent_level; j++) {
       cout << "\t";
     }
-    cout << "\t" << i.pointsTo << " : " << i.actualAddress << " : "
-	 << i.sizePointedTo << ":" << i.totalSubPointers << "\n";
+    cout << "\t" << i.points_to << " : " << i.actual_address << " : "
+	 << i.size_pointed_to << ":" << i.total_sub_pointers << "\n";
     HeapTraverser::PrintPointer(i, indent_level + 1);
   }
 }
@@ -39,8 +39,9 @@ void HeapTraverser::PrintHeap(
 		const std::vector<RemoteHeapPointer> &base_pointers)
 {
   for (const auto& p : base_pointers) {
-    cout << "BASE:" << p.pointsTo << " : " << p.actualAddress << " : "
-	 << p.sizePointedTo << " : " << p.totalSubPointers << "\n";
+    cout << "BASE:" << p.points_to << " : " << p.actual_address << " : "
+	 << p.size_pointed_to
+	 << " : " << p.total_sub_pointers << "\n";
     HeapTraverser::PrintPointer(p);
   }
 }
@@ -61,15 +62,15 @@ std::vector<RemoteHeapPointer> HeapTraverser::TraversePointers(std::vector<Remot
 }
 
 RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base){
-  const char* block_start =(char*)RemoteToLocal(base.pointsTo);
+  const char* block_start =(char*)RemoteToLocal(base.points_to);
   void* current_8_bytes;
   std::vector<RemoteHeapPointer> current_level_pointers = {};
   current_level_pointers.reserve(100);
-  for (size_t i=0;i<base.sizePointedTo;i+=sizeof(void*)){
+  for (size_t i=0;i<base.size_pointed_to;i+=sizeof(void*)){
     memcpy(&current_8_bytes, block_start +i,sizeof(void*));
 
     if (IsHeapAddress(current_8_bytes)) {
-      void* actual_address = (char*)base.pointsTo + i;
+      void* actual_address = (char*)base.points_to + i;
       const auto pointer_location = (void**)(block_start + i);
       const auto address_pointed_to = (void*)*(size_t*)pointer_location;
       const auto local_address_pointed_to = RemoteToLocal(address_pointed_to);
@@ -83,22 +84,22 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base){
 	SetAlreadyVisited(local_address_pointed_to);
 
       current_level_pointers.push_back({
-                      .actualAddress = actual_address,
-		      .pointsTo = address_pointed_to,
-		      .sizePointedTo = pointed_to_size,
-		      .totalSubPointers = 0,
-		      .containsPointersTo = {}
+                      .actual_address = actual_address,
+		      .points_to = address_pointed_to,
+		      .size_pointed_to = pointed_to_size,
+		      .total_sub_pointers = 0,
+		      .contains_pointers_to = {}
       });
     }
   }
 
   for (auto &j : current_level_pointers) {
     const struct RemoteHeapPointer p = FollowPointer(j);
-    base.totalSubPointers += p.totalSubPointers;
-    base.containsPointersTo.push_back(p);
+    base.total_sub_pointers += p.total_sub_pointers;
+    base.contains_pointers_to.push_back(p);
   }
 
-  base.totalSubPointers += current_level_pointers.size();
+  base.total_sub_pointers += current_level_pointers.size();
   return base;
 }
 
