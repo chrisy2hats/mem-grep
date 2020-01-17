@@ -25,7 +25,7 @@ TEST_CASE("Multi-layered bss pointers") {
   // Anything higher is an underflow or garbage data
   REQUIRE(bssSize < pow(2,48));
 
-  const char *bssCopy = DeepCopy(pid, bss.start, bssSize);
+  const char *bssCopy = RemoteMemory::Copy(pid, bss.start, bssSize);
   REQUIRE(bssCopy != nullptr);
   auto b = BssSearcher((char *)bss.start, (char *)bss.end, pid, 2048);
   auto heapPointers = b.findHeapPointers(heapMetadata);

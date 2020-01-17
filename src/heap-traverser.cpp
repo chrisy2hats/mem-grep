@@ -47,7 +47,7 @@ void HeapTraverser::PrintHeap(
 
 std::vector<RemoteHeapPointer> HeapTraverser::TraversePointers(std::vector<RemoteHeapPointer> base_pointers){
   if (heap_copy_==nullptr){
-    heap_copy_=DeepCopy(pid_,heap_metadata_.start,heap_metadata_.size);
+    heap_copy_ = RemoteMemory::Copy(pid_,heap_metadata_.start,heap_metadata_.size);
   }
   if (base_pointers.empty()) {
     std::cerr << "WARNING: HeapTraverser asked to traverse a empty list of pointers.\n";

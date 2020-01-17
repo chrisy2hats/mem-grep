@@ -8,16 +8,14 @@ set(EXECUTABLE_OUTPUT_PATH "out")
 add_executable(mem-grep
         src/main.cpp
         src/map-parser.cpp src/map-parser.hpp
-        src/memory-searcher.hpp
-        src/memory-writer.hpp
         src/bss-searcher.cpp src/bss-searcher.hpp
-        src/deep-copy.cpp src/deep-copy.hpp
         src/malloc-metadata.cpp src/malloc-metadata.hpp
         src/prerun-checks.cpp src/prerun-checks.hpp
         src/stack-searcher.cpp src/stack-searcher.hpp
         src/heap-traverser.cpp src/heap-traverser.hpp
         src/argument-parsing.cpp src/argument-parsing.hpp
         src/utils.cpp src/utils.hpp
+        src/remote-memory.cpp src/remote-memory.hpp
 	)
 
 
@@ -48,8 +46,7 @@ add_executable(unit-tests
         tests/heap-traverser-test.cpp
 
         src/map-parser.cpp src/map-parser.hpp
-        src/memory-searcher.hpp
-        src/deep-copy.cpp src/deep-copy.hpp
+        src/remote-memory.cpp src/remote-memory.hpp
         src/prerun-checks.cpp src/prerun-checks.hpp
         src/bss-searcher.cpp src/bss-searcher.hpp
         src/malloc-metadata.cpp src/malloc-metadata.hpp

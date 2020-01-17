@@ -1,7 +1,7 @@
 #ifndef MEMGREP_HEAP_TRAVERSER
 #define MEMGREP_HEAP_TRAVERSER
 #include "map-parser.hpp"
-#include "deep-copy.hpp"
+#include "remote-memory.hpp"
 #include "malloc-metadata.hpp"
 #include "utils.hpp"
 

@@ -37,7 +37,7 @@ std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(const void *curSt
   size_t framesSearched = 0;
 
   const size_t curStackSize = (char *)curStackEnd - (char *)stackStart_;
-  const char *stackCopy = DeepCopy(pid_, stackStart_, curStackSize);
+  const char *stackCopy = RemoteMemory::Copy(pid_, stackStart_, curStackSize);
 
   auto matches = std::vector<RemoteHeapPointer>();
   size_t zeroCount = 0;

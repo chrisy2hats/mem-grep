@@ -4,9 +4,8 @@
 #include <iostream>
 #include <cstring>
 #include <cassert>
-#include "memory-searcher.hpp"
 #include "map-parser.hpp"
-#include "deep-copy.hpp"
+#include "remote-memory.hpp"
 #include "malloc-metadata.hpp"
 #include "utils.hpp"
 #include "heap-traverser.hpp"

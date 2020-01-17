@@ -12,7 +12,7 @@ using std::cerr;
     size_t size=0;
     if (!is_local_address){
       // Gives us a 1 byte heap array containing the 1 byte before heap_address
-      char* size_ptr = DeepCopy( pid, size_location, sizeof(void *));
+      char* size_ptr = RemoteMemory::Copy( pid, size_location, sizeof(void *));
       size = *(reinterpret_cast<size_t*>(size_ptr));
       delete[] size_ptr;
     } else {

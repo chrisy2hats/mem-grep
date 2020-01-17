@@ -26,7 +26,7 @@ BssSearcher::BssSearcher(const char *actualBssStart,const char* actualBssEnd,con
     }
 
     const size_t bssSize = actualBssEnd_ - actualBssStart_;
-    const char* bssCopy = DeepCopy(pid_, actualBssStart_, bssSize);
+    const char* bssCopy = RemoteMemory::Copy(pid_, actualBssStart_, bssSize);
     assert(bssCopy!=nullptr);
 
     auto matches = std::vector<RemoteHeapPointer>();

@@ -1,18 +1,23 @@
-#include "deep-copy.hpp"
+#include "remote-memory.hpp"
 
-char* DeepCopy(const pid_t& pid, const void* start, const size_t& size) {
+using std::cout;
+using std::cerr;
+
+char* RemoteMemory::Copy(const pid_t& pid, const void* start, const size_t& size) {
+
   if (start == nullptr){
-    std::cerr << "DeepCopy requested to copy from nullptr\n";
+    cerr << __FUNCTION__ << " requested to copy from nullptr\n";
     return nullptr;
   }
 
   char* mem_area = nullptr;
   try {
     mem_area = new char[size];
-  } catch (std::bad_alloc& ac) {
-    std::cerr << "WARNING: DeepCopy was requested to copy a large memory section of "
+  } catch (std::bad_alloc& ba) {
+    cerr << "WARNING: " << __FUNCTION__ << "was requested to copy a large memory section of "
 		 "size: "
-	      << size << " memory could not be allocated to store this section as it is too large\n";
+	      << size << " memory could not be allocated to store this section as it is too large\n"
+	      << "Raw error message from new is:" << ba.what() << "\n";
     return mem_area;
   }
   assert(mem_area != nullptr);
