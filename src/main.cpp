@@ -6,11 +6,14 @@
 #include "argument-parsing.hpp"
 #include "utils.hpp"
 
+using std::cout;
+using std::cerr;
+
 int main(int argc, char **argv) {
     const struct cliArgs userArgs = ArgumentParser::parseArguments(argc, argv);
 
     if (!PreRunCheck()) {
-        std::cerr << "Prerun checks failed. mem-grep will now exit. Look at above output for info\n";
+        cerr << "Prerun checks failed. mem-grep will now exit. Look at above output for info\n";
         exit(1);
     }
 
@@ -27,11 +30,11 @@ int main(int argc, char **argv) {
         const auto bssSearcher = BssSearcher((char *) bss.start, (char *) bss.end, userArgs.pid,userArgs.max_heap_obj_size);
         const auto heapPointersInBss = bssSearcher.findHeapPointers(heapMetadata);
 
-        std::cout << "Found " << heapPointersInBss.size() << "pointers to the heap from the .bss section\n";
+        cout << "Found " << heapPointersInBss.size() << "pointers to the heap from the .bss section\n";
         if (userArgs.TraverseBssPointers) {
             auto traverser = HeapTraverser(userArgs.pid, heapMetadata, userArgs.max_heap_obj_size);
 	    const auto traversed = traverser.TraversePointers(heapPointersInBss);
-	  std::cout << "From " << heapPointersInBss.size() << " a further "
+	  cout << "From " << heapPointersInBss.size() << " a further "
                       << HeapTraverser::CountPointers(traversed) - heapPointersInBss.size()
                       << " heap pointers where found by traversing\n";
 	    HeapTraverser::PrintHeap(traversed);
@@ -41,18 +44,18 @@ int main(int argc, char **argv) {
         const auto stackSearcher = StackSearcher(stack.start, text[0], userArgs.pid,userArgs.max_heap_obj_size);
         const auto heapPointersOnStack = stackSearcher.findHeapPointers(stack.end, heapMetadata,
                                                                         userArgs.StackFramesToSearch);
-        std::cout << "Found " << heapPointersOnStack.size() << " pointers to the heap on the stack\n";
+        cout << "Found " << heapPointersOnStack.size() << " pointers to the heap on the stack\n";
         if (userArgs.TraverseStackPointers) {
 	  auto traverser = HeapTraverser(userArgs.pid, heapMetadata, userArgs.max_heap_obj_size);
 
 	  const auto deepStackPointers = traverser.TraversePointers(heapPointersOnStack);
-            std::cout << "From " << heapPointersOnStack.size() << " a further "
+            cout << "From " << heapPointersOnStack.size() << " a further "
                       << HeapTraverser::CountPointers(deepStackPointers) - heapPointersOnStack.size()
                       << " heap pointers where found by traversing\n";
 	    HeapTraverser::PrintHeap(deepStackPointers);
         }
     }
 
-    std::cout << "mem-grep finished without an error.\n";
+    cout << "mem-grep finished without an error.\n";
     return 0;
 }

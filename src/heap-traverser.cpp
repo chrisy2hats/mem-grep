@@ -1,7 +1,7 @@
 #include "heap-traverser.hpp"
 
 using std::cout;
-using std::endl;
+using std::cerr;
 
 HeapTraverser::HeapTraverser(const pid_t pid,const MAPS_ENTRY& heap,const size_t max_heap_obj):
 		heap_metadata_(heap),
@@ -50,7 +50,7 @@ std::vector<RemoteHeapPointer> HeapTraverser::TraversePointers(std::vector<Remot
     heap_copy_ = RemoteMemory::Copy(pid_,heap_metadata_.start,heap_metadata_.size);
   }
   if (base_pointers.empty()) {
-    std::cerr << "WARNING: HeapTraverser asked to traverse a empty list of pointers.\n";
+    cerr << "WARNING: HeapTraverser asked to traverse a empty list of pointers.\n";
     return {};
   }
   for (auto& pointer : base_pointers) {

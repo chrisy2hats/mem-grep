@@ -1,7 +1,7 @@
 #include "map-parser.hpp"
 
 using std::cout;
-using std::endl;
+using std::cerr;
 using std::string;
 
 MapParser::MapParser(const pid_t pid) :
@@ -22,7 +22,7 @@ std::ostream& operator << (std::ostream &o, const MAPS_ENTRY& m){
 
 std::string MapParser::GetExecutablePath() {
   const string exe_containing_file = "/proc/" + std::to_string(pid_) + "/exe";
-  std::cout << "Obtaining executable location from:" << exe_containing_file << "\n";
+  cout << "Obtaining executable location from:" << exe_containing_file << "\n";
 
   char buff[PATH_MAX];
   ssize_t len = ::readlink(exe_containing_file.c_str(), buff, sizeof(buff) - 1);
@@ -33,8 +33,8 @@ std::string MapParser::GetExecutablePath() {
     assert(exe.at(0) == '/');
     return exe;
   }
-  std::cerr << "Failed to obtain executable location for PID:" << pid_ << std::endl;
-  std::cerr << "Error string:" << strerror(errno) << std::endl;
+  cerr << "Failed to obtain executable location for PID:" << pid_ << '\n';
+  cerr << "Error string:" << strerror(errno) << '\n';
   exit(1);
 }
 
@@ -44,10 +44,10 @@ std::string MapParser::GetExecutablePath() {
 
   std::ifstream maps_file(maps_path);
   if (!maps_file) {
-    std::cerr << "Failed to open file: " << maps_path << endl;
+    cerr << "Failed to open file: " << maps_path << '\n';
     abort();
   }
-  cout << "Parsing file:" << maps_path << endl;
+  cout << "Parsing file:" << maps_path << '\n';
 
   std::vector<MAPS_ENTRY> entries = {};
   string line;
@@ -71,7 +71,6 @@ std::string MapParser::GetExecutablePath() {
 //    address           perms offset  dev   inode       pathname
 //    00400000-00452000 r-xp 00000000 08:02 173521      /usr/bin/dbus-daemon
 struct MAPS_ENTRY MapParser::ParseLine(const std::string &line) const {
-//	std::cout << "line=" << line<< std::endl;
   struct MAPS_ENTRY mapEntry = {};
 
   if (line.empty())

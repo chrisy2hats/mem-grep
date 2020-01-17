@@ -31,7 +31,7 @@ struct cliArgs ArgumentParser::parseArguments(int argc, char **argv) {
     struct cliArgs args;
 
     if (argc==1){
-        std::cerr << "No arguments provided. Exiting...\n";
+        cerr << "No arguments provided. Exiting...\n";
         exit(1);
     }
 
@@ -80,23 +80,23 @@ struct cliArgs ArgumentParser::parseArguments(int argc, char **argv) {
         if (strncmp(argv[i],"--MaxHeapObjSize",17)==0){
             args.max_heap_obj_size=std::stoul(argv[i+1]);
         }
-        std::cerr << "Unknown parameter provided: \"" << argv[i] << "\" Exiting...\n";
+        cerr << "Unknown parameter provided: \"" << argv[i] << "\" Exiting...\n";
         exit(1);
     }
 
     if (args.max_heap_obj_size==0){
         args.max_heap_obj_size=DEFAULT_MAX_HEAP_OBJ_SIZE_;
-        std::cout << "No max heap object size provided. Defaulting to " << args.max_heap_obj_size << '\n';
+        cout << "No max heap object size provided. Defaulting to " << args.max_heap_obj_size << '\n';
     }
 
     //Post parsing validation
     if (args.pid == 0) {
-        std::cerr << "No PID defined via --pid or --pidof\n";
+        cerr << "No PID defined via --pid or --pidof\n";
         exit(1);
     }
     if (!args.SearchBss && !args.SearchStack) {
-        std::cerr << "Program not asked to find pointers on the stack or .bss. Not sure what to do. Exiting\n";
-        std::cerr << "Please refer to documentation for examples\n";
+        cerr << "Program not asked to find pointers on the stack or .bss. Not sure what to do. Exiting\n";
+        cerr << "Please refer to documentation for examples\n";
         exit(1);
     }
     return args;
@@ -117,6 +117,6 @@ pid_t ArgumentParser::pidof(const std::string& program) {
 
 pid_t ArgumentParser::pid(const std::string &pidStr) {
     const pid_t pid = std::stoul(pidStr);
-    std::cout << "PID parsed as:" << pid << std::endl;
+    cout << "PID parsed as:" << pid << '\n';
     return pid;
 }

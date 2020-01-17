@@ -1,7 +1,7 @@
 #include "bss-searcher.hpp"
 
 using std::cout;
-using std::endl;
+using std::cerr;
 
 BssSearcher::BssSearcher(const char *actualBssStart,const char* actualBssEnd,const pid_t& pid,const size_t max_heap_obj)
         : actualBssStart_(actualBssStart),
@@ -10,7 +10,7 @@ BssSearcher::BssSearcher(const char *actualBssStart,const char* actualBssEnd,con
         max_heap_obj_(max_heap_obj)
         {
   	  if(actualBssStart_ == nullptr || actualBssEnd_ == nullptr){
-  	    std::cerr << "WARNING: BssSearcher initialised with a nullptr. All searches will return 0 results\n";
+  	    cerr << "WARNING: BssSearcher initialised with a nullptr. All searches will return 0 results\n";
   	  }
 	}
 

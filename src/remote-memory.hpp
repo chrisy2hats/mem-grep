@@ -35,7 +35,7 @@ class RemoteMemory {
     remote[0].iov_len = sizeof(T);
 
     std::cout << "Trying to write " << remote[0].iov_len
-	      << " bytes to address: " << local[0].iov_base << std::endl;
+	      << " bytes to address: " << local[0].iov_base << '\n';
     ssize_t nwrite = process_vm_writev(pid, local, 1, remote, 1, 0);
     if (nwrite != (ssize_t)local[0].iov_len) {
       std::cout << "writev failed: " << errno << "\n";

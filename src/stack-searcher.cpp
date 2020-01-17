@@ -88,7 +88,7 @@ std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(const void *curSt
       }
 
     } else if (AddrIsInText(addressPointedTo)) {
-      std::cout << "Frame end found return addr to :" << addressPointedTo << "\n";
+      cout << "Frame end found return addr to :" << addressPointedTo << "\n";
       framesSearched++;
       if (framesSearched > framesToSearch) {
 	break;
