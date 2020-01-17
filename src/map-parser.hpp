@@ -30,6 +30,7 @@ struct MAPS_ENTRY {
   std::string device;
   std::string inode;
   std::string file_path;
+  size_t size;
 };
 
 std::ostream& operator << (std::ostream &o, const MAPS_ENTRY& m);
@@ -53,7 +54,7 @@ class MapParser {
  protected:
  private:
   const pid_t pid_;
-  const struct MAPS_ENTRY kEmptyMapsEntry =  {nullptr,nullptr,"","","","",""};
+  const struct MAPS_ENTRY kEmptyMapsEntry =  {nullptr,nullptr,"","","","","",0};
 
   struct MAPS_ENTRY stack_ = kEmptyMapsEntry;
   struct MAPS_ENTRY heap_ = kEmptyMapsEntry;

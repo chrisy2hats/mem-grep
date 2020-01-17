@@ -99,6 +99,7 @@ struct MAPS_ENTRY MapParser::ParseLine(const std::string &line) const {
   const string end_str = line.substr(first_dash + 1, spaces[0]);
   const uint64_t end = std::stoul(end_str, 0, 16);
   memcpy(&mapEntry.end, &end, sizeof(void *)); //UGLY
+  mapEntry.size=(char*)mapEntry.end-(char*)mapEntry.start;
 
   mapEntry.permissions = line.substr(spaces[0], spaces[1] - spaces[0] - 1);
   mapEntry.offset = line.substr(spaces[1], spaces[2] - spaces[1] - 1);
