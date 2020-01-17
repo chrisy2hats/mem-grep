@@ -108,7 +108,7 @@ pid_t ArgumentParser::pidof(const std::string& program) {
     //In /proc/ but that is very long winded
     const std::string command = "pidof " + program;
     char result[15];
-    FILE *cmd = popen(program.c_str(), "r");
+    FILE *cmd = popen(command.c_str(), "r");
     fgets(result, 15, cmd);
     const pid_t pid = strtoul(result, NULL, 10);
     pclose(cmd);
