@@ -21,17 +21,19 @@ TEST_CASE("Multi-layered bss pointers") {
   bss = parser.getStoredBss();
   const size_t bssSize = (char *)bss.end - (char *)bss.start;
 
-  // If bssSize is close to a size_t max it overflowed as a bssSize of
-  // approaching 2**64 will never happen
-  REQUIRE(bssSize < (UINTMAX_MAX - 128));
+  // Addresses can't be more than 2**48 on modern x86_64 CPUs.
+  // Anything higher is an underflow or garbage data
+  REQUIRE(bssSize < pow(2,48));
+
   const char *bssCopy = DeepCopy(pid, bss.start, bssSize);
   REQUIRE(bssCopy != nullptr);
   auto b = BssSearcher((char *)bss.start, (char *)bss.end, pid, 2048);
   auto heapPointers = b.findHeapPointers(heapMetadata);
   REQUIRE(heapPointers.size() == 3);
   delete[] bssCopy;
-  auto deepPointers = HeapTraverser::TraverseHeapPointers(heapMetadata, heapPointers, pid, 2048);
-  REQUIRE(HeapTraverser::CountHeapPointers(deepPointers) == 9);
+  auto traverser = HeapTraverser(pid,heapMetadata,2048);
+  auto deepPointers = traverser.TraversePointers(heapPointers);
+  REQUIRE(HeapTraverser::CountPointers(deepPointers) == 9);
 
   kill(pid, SIGKILL);
 }

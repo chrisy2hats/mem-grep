@@ -29,9 +29,10 @@ int main(int argc, char **argv) {
 
         std::cout << "Found " << heapPointersInBss.size() << "pointers to the heap from the .bss section\n";
         if (userArgs.TraverseBssPointers) {
-            const auto traversed = HeapTraverser::TraverseHeapPointers(heapMetadata, heapPointersInBss,userArgs.pid, userArgs.max_heap_obj_size);
-            std::cout << "From " << heapPointersInBss.size() << " a further "
-                      << HeapTraverser::CountHeapPointers(traversed) - heapPointersInBss.size()
+            auto traverser = HeapTraverser(userArgs.pid, heapMetadata, userArgs.max_heap_obj_size);
+	    const auto traversed = traverser.TraversePointers(heapPointersInBss);
+	  std::cout << "From " << heapPointersInBss.size() << " a further "
+                      << HeapTraverser::CountPointers(traversed) - heapPointersInBss.size()
                       << " heap pointers where found by traversing\n";
 	    HeapTraverser::PrintHeap(traversed);
         }
@@ -42,10 +43,11 @@ int main(int argc, char **argv) {
                                                                         userArgs.StackFramesToSearch);
         std::cout << "Found " << heapPointersOnStack.size() << " pointers to the heap on the stack\n";
         if (userArgs.TraverseStackPointers) {
+	  auto traverser = HeapTraverser(userArgs.pid, heapMetadata, userArgs.max_heap_obj_size);
 
-            const auto deepStackPointers = HeapTraverser::TraverseHeapPointers(heapMetadata, heapPointersOnStack, userArgs.pid, userArgs.max_heap_obj_size);
+	  const auto deepStackPointers = traverser.TraversePointers(heapPointersOnStack);
             std::cout << "From " << heapPointersOnStack.size() << " a further "
-                      << HeapTraverser::CountHeapPointers(deepStackPointers) - heapPointersOnStack.size()
+                      << HeapTraverser::CountPointers(deepStackPointers) - heapPointersOnStack.size()
                       << " heap pointers where found by traversing\n";
 	    HeapTraverser::PrintHeap(deepStackPointers);
         }

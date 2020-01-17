@@ -3,71 +3,19 @@
 using std::cout;
 using std::endl;
 
-std::vector<RemoteHeapPointer> HeapTraverser::TraverseHeapPointers( const struct MAPS_ENTRY &heap,
-		std::vector<RemoteHeapPointer> base_pointers, const pid_t &pid,
-		const size_t max_heap_obj)
-{
-  if (base_pointers.empty()) {
-    std::cerr << "WARNING: HeapTraverser asked to traverse a empty list of pointers.\n";
-    return {};
-  }
-  std::vector<void *> already_visited = {};
-  for (auto& pointer : base_pointers) {
-    pointer = HeapTraverser::FollowPointer(heap, pointer, pid, max_heap_obj, already_visited);
-  }
+HeapTraverser::HeapTraverser(const pid_t pid,const MAPS_ENTRY& heap,const size_t max_heap_obj):
+		heap_metadata_(heap),
+		pid_(pid),
+		max_heap_obj_(max_heap_obj)
+{}
 
-  return base_pointers;
+HeapTraverser::~HeapTraverser(){
+  delete[] heap_copy_;
 }
 
-RemoteHeapPointer HeapTraverser::FollowPointer(const struct MAPS_ENTRY &heap,
-		struct RemoteHeapPointer &base, const pid_t &pid,
-		const size_t max_heap_obj, std::vector<void *> &already_visited)
+size_t HeapTraverser::CountPointers( const std::vector<RemoteHeapPointer>& basePointers)
 {
-  const char *block_pointed_to = DeepCopy(pid, base.pointsTo, base.sizePointedTo);
-  void *current = nullptr;
-  std::vector<RemoteHeapPointer> current_level_pointers = {};
-  for (size_t j = 0; j < base.sizePointedTo; j += (sizeof(void *))) {
-    memcpy(&current, block_pointed_to + j, sizeof(void *));
-
-    if (AddressIsOnHeap(current, heap.start, heap.end)) {
-      void* actual_address = (char *) base.pointsTo + j;
-      const auto pointer_location = (void **)(block_pointed_to + j);
-      const auto address_pointed_to = (void *)*pointer_location;
-      const size_t pointed_to_size = GetMallocMetadata(address_pointed_to, pid, max_heap_obj);
-
-      // Checking if a pointer is already visited is required as otherwise if two pointers
-      // Point to each other (even indirectly) then this function will get stuck in an infinite loop
-      // Until we get a stack overflow and the program crashes!
-      if (std::find(already_visited.begin(), already_visited.end(), address_pointed_to) != already_visited.end()) {
-	continue;
-      }
-      already_visited.push_back(address_pointed_to);
-
-      struct RemoteHeapPointer p = {actual_address, address_pointed_to, pointed_to_size, 0, {}};
-      current_level_pointers.push_back(p);
-    }
-  }
-  delete[] block_pointed_to;
-  for (auto &j : current_level_pointers) {
-    const struct RemoteHeapPointer p = FollowPointer(heap, j, pid, max_heap_obj, already_visited);
-    base.totalSubPointers += p.totalSubPointers;
-    base.containsPointersTo.push_back(p);
-  }
-  base.totalSubPointers += current_level_pointers.size();
-  return base;
-}
-
-[[nodiscard]] bool HeapTraverser::AddressIsOnHeap(
-		const void *address, const void *heap_start, const void *heap_end)
-{
-  const bool is_on_heap = address >= heap_start && address <= heap_end;
-  return is_on_heap;
-}
-
-size_t HeapTraverser::CountHeapPointers(
-		const std::vector<RemoteHeapPointer> &basePointers)
-{
-  auto total = 0;
+  size_t total = 0;
   for (const auto &i : basePointers) {
     total += i.totalSubPointers;
   }
@@ -78,13 +26,11 @@ size_t HeapTraverser::CountHeapPointers(
 void HeapTraverser::PrintPointer(const RemoteHeapPointer& p, int indent_level/*=0*/)
 {
   for (const auto &i : p.containsPointersTo) {
-    if (i.totalSubPointers != 0 && i.sizePointedTo > 64) {
-      for (int j = 0; j < indent_level; j++) {
-	std::cout << "\t";
-      }
-      std::cout << "\t" << i.pointsTo << " : " << i.actualAddress << " : "
-		<< i.sizePointedTo << ":" << i.totalSubPointers << "\n";
+    for (int j = 0; j < indent_level; j++) {
+      cout << "\t";
     }
+    cout << "\t" << i.pointsTo << " : " << i.actualAddress << " : "
+	 << i.sizePointedTo << ":" << i.totalSubPointers << "\n";
     HeapTraverser::PrintPointer(i, indent_level + 1);
   }
 }
@@ -93,12 +39,96 @@ void HeapTraverser::PrintHeap(
 		const std::vector<RemoteHeapPointer> &base_pointers)
 {
   for (const auto& p : base_pointers) {
-    if (p.sizePointedTo < 64) {
-      if (p.totalSubPointers != 0) {
-	std::cout << "BASE:" << p.pointsTo << " : " << p.actualAddress << " : "
-		  << p.sizePointedTo << " : " << p.totalSubPointers << "\n";
-      }
-    }
+    cout << "BASE:" << p.pointsTo << " : " << p.actualAddress << " : "
+	 << p.sizePointedTo << " : " << p.totalSubPointers << "\n";
     HeapTraverser::PrintPointer(p);
   }
+}
+
+std::vector<RemoteHeapPointer> HeapTraverser::TraversePointers(std::vector<RemoteHeapPointer> base_pointers){
+  if (heap_copy_==nullptr){
+    heap_copy_=DeepCopy(pid_,heap_metadata_.start,heap_metadata_.size);
+  }
+  if (base_pointers.empty()) {
+    std::cerr << "WARNING: HeapTraverser asked to traverse a empty list of pointers.\n";
+    return {};
+  }
+  for (auto& pointer : base_pointers) {
+    pointer = HeapTraverser::FollowPointer(pointer);
+  }
+
+  return base_pointers;
+}
+
+RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base){
+  const char* block_start =(char*)RemoteToLocal(base.pointsTo);
+  void* current_8_bytes;
+  std::vector<RemoteHeapPointer> current_level_pointers = {};
+  current_level_pointers.reserve(100);
+  for (size_t i=0;i<base.sizePointedTo;i+=sizeof(void*)){
+    memcpy(&current_8_bytes, block_start +i,sizeof(void*));
+
+    if (IsHeapAddress(current_8_bytes)) {
+      void* actual_address = (char*)base.pointsTo + i;
+      const auto pointer_location = (void**)(block_start + i);
+      const auto address_pointed_to = (void*)*(size_t*)pointer_location;
+      const auto local_address_pointed_to = RemoteToLocal(address_pointed_to);
+
+      const size_t pointed_to_size = GetMallocMetadata(local_address_pointed_to,
+		      pid_, max_heap_obj_, false, true);
+
+      if (IsAlreadyVisited(local_address_pointed_to))
+	continue;
+      else
+	SetAlreadyVisited(local_address_pointed_to);
+
+      current_level_pointers.push_back({
+                      .actualAddress = actual_address,
+		      .pointsTo = address_pointed_to,
+		      .sizePointedTo = pointed_to_size,
+		      .totalSubPointers = 0,
+		      .containsPointersTo = {}
+      });
+    }
+  }
+
+  for (auto &j : current_level_pointers) {
+    const struct RemoteHeapPointer p = FollowPointer(j);
+    base.totalSubPointers += p.totalSubPointers;
+    base.containsPointersTo.push_back(p);
+  }
+
+  base.totalSubPointers += current_level_pointers.size();
+  return base;
+}
+
+[[nodiscard]] inline bool HeapTraverser::IsHeapAddress(const void* address)const{
+  const bool is_on_heap = address >= heap_metadata_.start && address <= heap_metadata_.end;
+  return is_on_heap;
+}
+
+void HeapTraverser::SetAlreadyVisited(const void* address){
+  auto size_location = (size_t*) ((char*)address-sizeof(void*));
+  assert((char*)size_location == ((char*)address-sizeof(void*)) );
+  size_t new_val = *size_location += kAlreadyVisitedFlag;
+  *size_location=new_val;
+}
+
+bool HeapTraverser::IsAlreadyVisited(const void* address)const{
+  const auto size_location = (size_t*) ((char*)address-sizeof(void*));
+  const bool already_visited = (*size_location) & kAlreadyVisitedFlag;
+  return already_visited;
+}
+
+
+[[nodiscard]] inline void* HeapTraverser::LocalToRemote(const void* local_address) const {
+  	const size_t offset = (char*)local_address-heap_copy_;
+	void* remote_address = (char*)heap_metadata_.start+offset;
+	return remote_address;
+}
+
+[[nodiscard]] inline void* HeapTraverser::RemoteToLocal(const void* remote_address) const {
+	const size_t offset = (char*)remote_address-(char*)heap_metadata_.start;
+	void* local_address = (char*) heap_copy_+offset;
+	return local_address;
 }

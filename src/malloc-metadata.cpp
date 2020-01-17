@@ -3,11 +3,22 @@
 using std::cout;
 using std::cerr;
 
-[[nodiscard]] size_t GetMallocMetadata(const void *heap_address, const pid_t pid, const size_t max_size, const bool print_warnings /*=false*/) {
-    // Gives us a 1 byte heap array containing the 1 byte before heap_address
-    char* size_ptr = DeepCopy( pid, (char *)heap_address - sizeof(void *), sizeof(void *));
-    size_t size = *(reinterpret_cast<size_t*>(size_ptr));
-    delete[] size_ptr;
+[[nodiscard]] size_t GetMallocMetadata(const void *heap_address, const pid_t pid, const size_t max_size, const bool print_warnings /*=false*/,const bool is_local_address/*=false*/) {
+  if (heap_address==nullptr){
+    return 0;
+  }
+    //The size is stored in the 8 bytes preceding the start of the object
+    const size_t* size_location =(size_t*)((char*)heap_address - sizeof(void*));
+    size_t size=0;
+    if (!is_local_address){
+      // Gives us a 1 byte heap array containing the 1 byte before heap_address
+      char* size_ptr = DeepCopy( pid, size_location, sizeof(void *));
+      size = *(reinterpret_cast<size_t*>(size_ptr));
+      delete[] size_ptr;
+    } else {
+      //We are getting the size of an object in a deep copy we already have.
+      size = *size_location;
+    }
 
     // The 3 least significant bits of the size are flags not the actual size
     // glibc can do this as all allocations are a multiple of 8 so the 3 least
