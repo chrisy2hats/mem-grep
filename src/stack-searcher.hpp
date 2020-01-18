@@ -1,3 +1,5 @@
+#ifndef MEMGREP_STACK_SEARCHER
+#define MEMGREP_STACK_SEARCHER
 #include <vector>
 #include "bss-searcher.hpp"
 #include "map-parser.hpp"
@@ -22,3 +24,4 @@ public:
     std::vector<RemoteHeapPointer> findHeapPointers(const void*curStackEnd, const MAPS_ENTRY &heap, size_t framesToSearch=0) const;
 
 };
+#endif // MEMGREP_STACK_SEARCHER
