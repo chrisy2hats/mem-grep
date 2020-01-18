@@ -16,6 +16,17 @@ Map FedoraParams = [
     InstallCommand: "yum update -y && yum install -y cmake make git gcc g++ cppcheck python-pygments valgrind nasm binutils procps cppcheck cppcheck-htmlreport",
 ] as HashMap
 
+Map OpenSuseParams = [
+    Container: "opensuse/tumbleweed",
+    InstallCommand: "zypper update -y && zypper install -y git cmake make gcc-c++ nasm cppcheck valgrind",
+] as HashMap
+
+Map ArchLinuxParams = [
+    Container: "archlinux",
+    InstallCommand: "pacman -Sy --noconfirm archlinux-keyring && pacman --noconfirm -Syu git gcc cmake make cppcheck nasm binutils valgrind",
+] as HashMap
+
+
 pipeline{
     agent{
         label "master"
@@ -30,6 +41,8 @@ pipeline{
         booleanParam(name: 'RunUbuntu', defaultValue: 'true', description: 'Run a build in an Ubuntu container?')
         booleanParam(name: 'RunDebian', defaultValue: 'true', description: 'Run a build in an Debian container?')
         booleanParam(name: 'RunFedora', defaultValue: 'true', description: 'Run a build in an Fedora container?')
+        booleanParam(name: 'RunOpenSuse', defaultValue: 'true', description: 'Run a build in an OpenSuse container?')
+        booleanParam(name: 'RunArchLinux', defaultValue: 'true', description: 'Run a build in an ArchLinux container?')
     }
     stages{
         stage("Build Pipeline - Ubuntu"){
@@ -54,6 +67,22 @@ pipeline{
             }
             steps{
                 build job: 'build-pipeline', parameters: [string(name: 'Container', value:"${FedoraParams.Container}"), string(name: 'InstallCommand',value:"${FedoraParams.InstallCommand}")], wait: true, propagate: false
+            }
+        }
+        stage("Build Pipeline - OpenSuse"){
+            when{
+                expression { return params.RunOpenSuse }
+            }
+            steps{
+                build job: 'build-pipeline', parameters: [string(name: 'Container', value:"${OpenSuseParams.Container}"), string(name: 'InstallCommand',value:"${OpenSuseParams.InstallCommand}")], wait: true, propagate: false
+            }
+        }
+        stage("Build Pipeline - ArchLinux"){
+            when{
+                expression { return params.RunArchLinux }
+            }
+            steps{
+                build job: 'build-pipeline', parameters: [string(name: 'Container', value:"${ArchLinuxParams.Container}"), string(name: 'InstallCommand',value:"${ArchLinuxParams.InstallCommand}")], wait: true, propagate: false
             }
         }
     }
