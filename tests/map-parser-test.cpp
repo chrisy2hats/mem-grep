@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
 #define UNIT_TEST
-#include "../src/map-parser.hpp"
+#include "../src/misc/map-parser.hpp"
 #undef UNIT_TEST
 #include "null-structs.hpp"
 #include "utils.hpp"

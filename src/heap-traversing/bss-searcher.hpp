@@ -4,10 +4,10 @@
 #include <iostream>
 #include <cstring>
 #include <cassert>
-#include "map-parser.hpp"
-#include "remote-memory.hpp"
-#include "malloc-metadata.hpp"
-#include "utils.hpp"
+#include "../misc/map-parser.hpp"
+#include "../misc/remote-memory.hpp"
+#include "../misc/malloc-metadata.hpp"
+#include "../misc/utils.hpp"
 #include "heap-traverser.hpp"
 
 class BssSearcher{

@@ -1,4 +1,5 @@
 #include "utils.hpp"
+#include <functional>
 
 std::ostream& operator << (std::ostream &o, const RemoteHeapPointer& p){
   std::string has_copy_str;

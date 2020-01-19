@@ -14,6 +14,7 @@ using std::cerr;
       // Gives us a 1 byte heap array containing the 1 byte before heap_address
       char* size_ptr = RemoteMemory::Copy( pid, size_location, sizeof(void *));
       size = *(reinterpret_cast<size_t*>(size_ptr));
+      memcpy(&size,size_ptr,sizeof(void*));
       delete[] size_ptr;
     } else {
       //We are getting the size of an object in a deep copy we already have.

@@ -9,15 +9,15 @@ set(EXECUTABLE_OUTPUT_PATH "out")
 
 add_executable(mem-grep
         src/main.cpp
-        src/map-parser.cpp src/map-parser.hpp
-        src/bss-searcher.cpp src/bss-searcher.hpp
-        src/malloc-metadata.cpp src/malloc-metadata.hpp
-        src/prerun-checks.cpp src/prerun-checks.hpp
-        src/stack-searcher.cpp src/stack-searcher.hpp
-        src/heap-traverser.cpp src/heap-traverser.hpp
-        src/argument-parsing.cpp src/argument-parsing.hpp
-        src/utils.cpp src/utils.hpp
-        src/remote-memory.cpp src/remote-memory.hpp
+        src/misc/map-parser.cpp src/misc/map-parser.hpp
+        src/heap-traversing/bss-searcher.cpp src/heap-traversing/bss-searcher.hpp
+        src/misc/malloc-metadata.cpp src/misc/malloc-metadata.hpp
+        src/misc/prerun-checks.cpp src/misc/prerun-checks.hpp
+        src/heap-traversing/stack-searcher.cpp src/heap-traversing/stack-searcher.hpp
+        src/heap-traversing/heap-traverser.cpp src/heap-traversing/heap-traverser.hpp
+        src/argument-parsing/argument-parsing.cpp src/argument-parsing/argument-parsing.hpp
+        src/misc/utils.cpp src/misc/utils.hpp
+        src/misc/remote-memory.cpp src/misc/remote-memory.hpp
 	)
 target_link_libraries(mem-grep Threads::Threads)
 
@@ -48,12 +48,12 @@ add_executable(unit-tests
         tests/bss-searcher-test.cpp
         tests/heap-traverser-test.cpp
 
-        src/map-parser.cpp src/map-parser.hpp
-        src/remote-memory.cpp src/remote-memory.hpp
-        src/prerun-checks.cpp src/prerun-checks.hpp
-        src/bss-searcher.cpp src/bss-searcher.hpp
-        src/malloc-metadata.cpp src/malloc-metadata.hpp
-        src/heap-traverser.cpp src/heap-traverser.hpp
+        src/misc/map-parser.cpp src/misc/map-parser.hpp
+        src/misc/remote-memory.cpp src/misc/remote-memory.hpp
+        src/misc/prerun-checks.cpp src/misc/prerun-checks.hpp
+        src/heap-traversing/bss-searcher.cpp src/heap-traversing/bss-searcher.hpp
+        src/misc/malloc-metadata.cpp src/misc/malloc-metadata.hpp
+        src/heap-traversing/heap-traverser.cpp src/heap-traversing/heap-traverser.hpp
         tests/null-structs.cpp
         tests/utils.cpp tests/utils.hpp
         )

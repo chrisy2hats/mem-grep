@@ -2,6 +2,7 @@
 #define MEM_GREP_UTILS_HPP
 #include <iostream>
 #include <vector>
+#include <functional>
 
 // A pointer to heap memory in the remote process
 // The pointer may be from the stack, from the .bss or found from traversing the heap
@@ -39,4 +40,11 @@ struct RemoteHeapPointer {
 
 // Rudimentary overload of << so that we can "std::cout <<" a RemoteHeapPointer
 std::ostream& operator << (std::ostream &o, const RemoteHeapPointer& p);
+
+//std::vector<RemoteHeapPointer> flat_filter(const std::vector<const RemoteHeapPointer>& ptr, const std::function<bool(const RemoteHeapPointer&)>& func);
+std::vector<RemoteHeapPointer> flat_filter(const RemoteHeapPointer& ptr, const std::function<bool(const RemoteHeapPointer&)>& func);
+
+std::vector<RemoteHeapPointer> filter_pointer(const RemoteHeapPointer& ptr, const std::function<bool(const RemoteHeapPointer&)>& func,
+					      std::vector<RemoteHeapPointer>& matches);
+//RemoteHeapPointer filter(const RemoteHeapPointer& p);
 #endif	// MEM_GREP_UTILS_HPP

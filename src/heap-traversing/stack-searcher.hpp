@@ -2,7 +2,7 @@
 #define MEMGREP_STACK_SEARCHER
 #include <vector>
 #include "bss-searcher.hpp"
-#include "map-parser.hpp"
+#include "../misc/map-parser.hpp"
 
 class StackSearcher{
 private:
