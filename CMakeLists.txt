@@ -18,6 +18,7 @@ add_executable(mem-grep
         src/argument-parsing/argument-parsing.cpp src/argument-parsing/argument-parsing.hpp
         src/misc/utils.cpp src/misc/utils.hpp
         src/misc/remote-memory.cpp src/misc/remote-memory.hpp
+        src/filtering/heap-filter.cpp src/filtering/heap-filter.hpp
 	)
 target_link_libraries(mem-grep Threads::Threads)
 
@@ -41,12 +42,16 @@ include_directories(tests/catch2/single_include)
 add_executable(unit-tests
         tests/test_main.cpp
         tests/null-structs.hpp
+        tests/utils.cpp
+        tests/utils.hpp
 
         tests/map-parser-test.cpp
         tests/memory-searcher-test.cpp
         tests/prerun-checks-test.cpp
         tests/bss-searcher-test.cpp
         tests/heap-traverser-test.cpp
+        tests/null-structs.cpp
+        tests/heap-filter-test.cpp
 
         src/misc/map-parser.cpp src/misc/map-parser.hpp
         src/misc/remote-memory.cpp src/misc/remote-memory.hpp
@@ -54,8 +59,7 @@ add_executable(unit-tests
         src/heap-traversing/bss-searcher.cpp src/heap-traversing/bss-searcher.hpp
         src/misc/malloc-metadata.cpp src/misc/malloc-metadata.hpp
         src/heap-traversing/heap-traverser.cpp src/heap-traversing/heap-traverser.hpp
-        tests/null-structs.cpp
-        tests/utils.cpp tests/utils.hpp
+        src/filtering/heap-filter.cpp src/filtering/heap-filter.hpp
         )
 target_link_libraries(unit-tests Threads::Threads)
 
