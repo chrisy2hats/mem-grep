@@ -99,7 +99,7 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base){
   const char* block_start =(char*)RemoteToLocal(base.points_to);
   void* current_8_bytes;
   std::vector<RemoteHeapPointer> current_level_pointers = {};
-  current_level_pointers.reserve(100);
+  current_level_pointers.reserve(16);
   for (size_t i=0;i<base.size_pointed_to;i+=sizeof(void*)){
     memcpy(&current_8_bytes, block_start +i,sizeof(void*));
 
