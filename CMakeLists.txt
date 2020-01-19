@@ -1,6 +1,8 @@
 cmake_minimum_required(VERSION 3.00)
 project(mem-grep)
 
+FIND_PACKAGE (Threads REQUIRED)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -fpermissive -g")
 set(EXECUTABLE_OUTPUT_PATH "out")
@@ -17,6 +19,7 @@ add_executable(mem-grep
         src/utils.cpp src/utils.hpp
         src/remote-memory.cpp src/remote-memory.hpp
 	)
+target_link_libraries(mem-grep Threads::Threads)
 
 
 #Programs for manual testing
@@ -54,6 +57,7 @@ add_executable(unit-tests
         tests/null-structs.cpp
         tests/utils.cpp tests/utils.hpp
         )
+target_link_libraries(unit-tests Threads::Threads)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -pedantic")
 

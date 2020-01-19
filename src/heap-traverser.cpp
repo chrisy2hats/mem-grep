@@ -46,6 +46,19 @@ void HeapTraverser::PrintHeap(
   }
 }
 
+void HeapTraverser::WorkerThread (std::vector<RemoteHeapPointer>& base_pointers,std::atomic<uint64_t>& shared_index){
+	while (shared_index < base_pointers.size()){
+	  // We MUST save the value when we increment shared_index and only use the returned value
+	  // if we reference shared_index directly it could have been incremented by a different
+	  // thread. i.e. "base_pointers.at(shared_index)=..." is unsafe and a race condition but
+	  // "base_pointers.at(current_local_index) is safe
+	  const size_t current_local_index = shared_index++;
+
+	  base_pointers.at(current_local_index) =
+			  HeapTraverser::FollowPointer(base_pointers.at(current_local_index));
+	}
+}
+
 std::vector<RemoteHeapPointer> HeapTraverser::TraversePointers(std::vector<RemoteHeapPointer> base_pointers){
   if (heap_copy_==nullptr){
     heap_copy_ = RemoteMemory::Copy(pid_,heap_metadata_.start,heap_metadata_.size);
@@ -54,8 +67,29 @@ std::vector<RemoteHeapPointer> HeapTraverser::TraversePointers(std::vector<Remot
     cerr << "WARNING: HeapTraverser asked to traverse a empty list of pointers.\n";
     return {};
   }
-  for (auto& pointer : base_pointers) {
-    pointer = HeapTraverser::FollowPointer(pointer);
+  const unsigned int hardware_thread_count = std::thread::hardware_concurrency();
+  std::vector<std::future<void>> thread_futures(hardware_thread_count);
+
+  // std::launch::async requires a lambda or a std::function.
+  // It won't accept just a function pointer or the member function
+  auto callable_worker = [this] (std::vector<RemoteHeapPointer>& a,std::atomic<uint64_t>& b){
+    WorkerThread(a,b);
+  };
+
+  // Using std::atomic guantees that 2 threads won't traverse the same base pointer
+  // As even if they attempt to increment the index variable at the same time
+  // They will get different indexs back
+  std::atomic<uint64_t> shared_index(0);
+
+  for (auto& one_threads_future : thread_futures) {
+    one_threads_future = std::async(std::launch::async, callable_worker, std::ref(base_pointers),
+		    std::ref(shared_index));
+  }
+
+  //Wait for all threads to complete
+  // Each .wait call will block indefinitely until that thread terminates itself
+  for (const auto& future : thread_futures) {
+    future.wait();
   }
 
   return base_pointers;

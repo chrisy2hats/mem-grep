@@ -7,6 +7,9 @@
 
 #include <iostream>
 #include <vector>
+#include <atomic>
+#include <thread>
+#include <future>
 
 class HeapTraverser{
   public:
@@ -21,6 +24,7 @@ class HeapTraverser{
 
   private:
   RemoteHeapPointer FollowPointer(RemoteHeapPointer& base);
+  void WorkerThread(std::vector<RemoteHeapPointer>& base_pointers, std::atomic<uint64_t>& shared_index);
   [[nodiscard]] inline bool IsHeapAddress(const void* address) const;
 
   // During traversal the same same memory address must not be visited twice as otherwise
