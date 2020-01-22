@@ -1,6 +1,20 @@
 #include "utils.hpp"
 
-pid_t launchProgram( const char* command, bool wait /*=true*/, int wait_time /*=1*/) {
+void ForeachTargetProgram(const std::function<void(const pid_t,const std::string&)>& functor ){
+  const std::vector<std::string> target_programs = {
+		  "asmTarget", "onheapint", "runUntilManipulatedHeap","bssHeapPointers",
+		  "multiLayeredBssHeapPointers","onstackint","runUntilManipulatedStack"
+  };
+
+  for (const std::string& program : target_programs){
+    std::cout << "Launching program:" << program << "\n";
+    const pid_t pid = LaunchProgram(program.c_str());
+    functor(pid,program);
+    kill(pid, SIGKILL);
+  }
+}
+
+pid_t LaunchProgram( const char* command, bool wait /*=true*/, int wait_time /*=1*/) {
   pid_t pid;
   if ((pid = fork()) == 0) {
     // We are in the child process
