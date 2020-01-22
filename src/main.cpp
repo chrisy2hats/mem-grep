@@ -27,8 +27,8 @@ int main(int argc, char **argv) {
     std::vector<MAPS_ENTRY> text = parser.getStoredText();
 
     if (userArgs.SearchBss) {
-        const auto bssSearcher = BssSearcher((char *) bss.start, (char *) bss.end, userArgs.pid,userArgs.max_heap_obj_size);
-        const auto heapPointersInBss = bssSearcher.findHeapPointers(heapMetadata);
+        const auto bssSearcher = BssSearcher(bss, userArgs.pid,userArgs.max_heap_obj_size);
+        const auto heapPointersInBss = bssSearcher.FindHeapPointers(heapMetadata);
 
         cout << "Found " << heapPointersInBss.size() << "pointers to the heap from the .bss section\n";
         if (userArgs.TraverseBssPointers) {

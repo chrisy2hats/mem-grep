@@ -27,8 +27,8 @@ TEST_CASE("Multi-layered bss pointers") {
 
   const char *bssCopy = RemoteMemory::Copy(pid, bss.start, bssSize);
   REQUIRE(bssCopy != nullptr);
-  auto b = BssSearcher((char *)bss.start, (char *)bss.end, pid, 2048);
-  auto heapPointers = b.findHeapPointers(heapMetadata);
+  auto b = BssSearcher(bss, pid, 2048);
+  auto heapPointers = b.FindHeapPointers(heapMetadata);
   REQUIRE(heapPointers.size() == 3);
   delete[] bssCopy;
   auto traverser = HeapTraverser(pid,heapMetadata,2048);

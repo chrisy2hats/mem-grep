@@ -11,8 +11,8 @@ TEST_CASE("Exclude none"){
     auto bss_metadata = m.getStoredBss();
     auto heap_metadata = m.getStoredHeap();
 
-    auto bss_searcher = BssSearcher((char*)bss_metadata.start, (char*)bss_metadata.end, pid, 2048);
-    auto bss_pointers = bss_searcher.findHeapPointers(heap_metadata);
+    auto bss_searcher = BssSearcher(bss_metadata, pid, 2048);
+    auto bss_pointers = bss_searcher.FindHeapPointers(heap_metadata);
 
     auto traverser = HeapTraverser(pid, heap_metadata, 2048);
     const std::vector<RemoteHeapPointer> traversed = traverser.TraversePointers(bss_pointers);
@@ -31,8 +31,8 @@ TEST_CASE("Has child pointers"){
   auto bss_metadata = m.getStoredBss();
   auto heap_metadata = m.getStoredHeap();
 
-  auto bss_searcher = BssSearcher((char*)bss_metadata.start,(char*)bss_metadata.end,pid,2048);
-  auto bss_pointers = bss_searcher.findHeapPointers(heap_metadata);
+  auto bss_searcher = BssSearcher(bss_metadata,pid,2048);
+  auto bss_pointers = bss_searcher.FindHeapPointers(heap_metadata);
 
   auto traverser = HeapTraverser(pid,heap_metadata,2048);
   const std::vector<RemoteHeapPointer> traversed = traverser.TraversePointers(bss_pointers);
@@ -51,8 +51,8 @@ TEST_CASE("Single and multi thread same result") {
     auto bss_metadata = m.getStoredBss();
     auto heap_metadata = m.getStoredHeap();
 
-    auto bss_searcher = BssSearcher((char*)bss_metadata.start, (char*)bss_metadata.end, pid, 2048);
-    auto bss_pointers = bss_searcher.findHeapPointers(heap_metadata);
+    auto bss_searcher = BssSearcher(bss_metadata, pid, 2048);
+    auto bss_pointers = bss_searcher.FindHeapPointers(heap_metadata);
 
     auto traverser = HeapTraverser(pid, heap_metadata, 2048);
     const std::vector<RemoteHeapPointer> traversed = traverser.TraversePointers(bss_pointers);
