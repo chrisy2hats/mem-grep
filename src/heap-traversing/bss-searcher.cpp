@@ -3,68 +3,56 @@
 using std::cout;
 using std::cerr;
 
-BssSearcher::BssSearcher(const char *actualBssStart,const char* actualBssEnd,const pid_t& pid,const size_t max_heap_obj)
-        : actualBssStart_(actualBssStart),
-        actualBssEnd_(actualBssEnd),
-        pid_(pid),
-        max_heap_obj_(max_heap_obj)
-        {
-  	  if(actualBssStart_ == nullptr || actualBssEnd_ == nullptr){
-  	    cerr << "WARNING: BssSearcher initialised with a nullptr. All searches will return 0 results\n";
-  	  }
-	}
-
-[[nodiscard]] bool BssSearcher::AddrIsOnHeap(const void *addr, const void *heapStart, const void *heapEnd) const {
-    const bool IsOnHeap = addr >= heapStart && addr <= heapEnd;
-    return IsOnHeap;
+BssSearcher::BssSearcher(const MAPS_ENTRY& bss_metadata,const pid_t& pid,const size_t max_heap_obj)
+        : pid_(pid),
+        max_heap_obj_(max_heap_obj),
+        bss_metadata_(bss_metadata) {
+  if (bss_metadata_.start == nullptr || bss_metadata_.end == nullptr) {
+    cerr << "WARNING: BssSearcher initialised with a nullptr. All searches will return 0 results\n";
+  }
 }
 
-[[nodiscard]] std::vector<RemoteHeapPointer> BssSearcher::findHeapPointers(const MAPS_ENTRY &heap) const{
-    if (actualBssStart_ == nullptr || actualBssEnd_ == nullptr){
-      // No need to print error message as the constructor will have if any parameter is null
-      return {};
+[[nodiscard]] std::vector<RemoteHeapPointer> BssSearcher::FindHeapPointers(const MAPS_ENTRY &heap_metadata) const{
+  if (bss_metadata_.start == nullptr || bss_metadata_.end == nullptr){
+    // No need to print error message as the constructor will have notified if any parameter is null
+    return {};
+  }
+
+  const char* bss_copy = RemoteMemory::Copy(pid_, bss_metadata_.start, bss_metadata_.size);
+  assert(bss_copy !=nullptr);
+
+  std::vector<RemoteHeapPointer> matches;
+  for (size_t i = 0; i < bss_metadata_.size; i += (sizeof(void *))) {
+    size_t current = 0;
+    memcpy(&current, bss_copy + i, sizeof(void *));
+
+    // If our target programs source has, in global scope, "int* i = new int;"
+    // kPointerLocation will be &i
+    // And kAddressPointedTo will be i (The memory address potentially on the heap
+    // Except within our deepcopy of the processes .bss section not the
+    // actual .bss section
+    const auto kPointerLocation = (void **) (bss_copy + i);
+    const auto kAddressPointedTo = (void *) *kPointerLocation;
+
+    if (AddressIsOnHeap(kAddressPointedTo, heap_metadata)) {
+      void *actual_address = (void*) ((char*)bss_metadata_.start + i);
+      const size_t kSizePointedTo = GetMallocMetadata(kAddressPointedTo, pid_, max_heap_obj_);
+
+      const struct RemoteHeapPointer matching_pointer = {
+		      .actual_address = actual_address,
+		      .points_to = kAddressPointedTo,
+		      .size_pointed_to = kSizePointedTo,
+		      .total_sub_pointers = 0,
+		      .contains_pointers_to = {}
+      };
+      matches.push_back(matching_pointer);
     }
+  }
+  delete[] bss_copy;
+  return matches;
+}
 
-    const size_t bssSize = actualBssEnd_ - actualBssStart_;
-    const char* bssCopy = RemoteMemory::Copy(pid_, actualBssStart_, bssSize);
-    assert(bssCopy!=nullptr);
-
-    auto matches = std::vector<RemoteHeapPointer>();
-    size_t zeroCount = 0, onHeapCount = 0, offHeapCount = 0;
-    for (size_t i = 0; i < bssSize; i += (sizeof(void *))) {
-        size_t current = 0;
-        memcpy(&current, bssCopy + i, sizeof(void *));
-        if (current == 0) {
-            zeroCount++;
-            continue;
-        }
-
-        // If our target programs source has, in global scope, "int* i = new int;"
-        // pointerLocation will be &i
-        // And addressPointerTo will be i (The memory address potentially on the heap
-        // Except within our deepcopy of the processes .bss section not the
-        // actual .bss section
-        auto pointerLocation = (void **) (bssCopy + i);
-        auto addressPointedTo = (void *) *pointerLocation;
-
-        if (AddrIsOnHeap(addressPointedTo, heap.start, heap.end)) {
-            void *actualAddr =(void*) (actualBssStart_ + i);
-            const size_t sizePointedTo = GetMallocMetadata(addressPointedTo, pid_, max_heap_obj_);
-            cout << "---------------------------\n";
-            cout << "Global pointer to heap memory found\n";
-            cout << "Pointer memory is at: " << actualAddr << "\n";
-            cout << "Which points to : " << addressPointedTo << "\n";
-            cout << "Pointer found at .bss offset:" << i << "\n";
-            cout << "Which points to block of size:" << sizePointedTo << "\n";
-            cout << "---------------------------\n";
-            const struct RemoteHeapPointer result = {actualAddr, addressPointedTo,sizePointedTo};
-            matches.push_back(result);
-
-            onHeapCount++;
-        } else {
-            offHeapCount++;
-        }
-    }
-    delete[] bssCopy;
-    return matches;
+[[nodiscard]] inline bool BssSearcher::AddressIsOnHeap(const void *address,const MAPS_ENTRY& heap_metadata) const {
+    const bool IsOnHeap = address >= heap_metadata.start && address <= heap_metadata.end;
+    return IsOnHeap;
 }
