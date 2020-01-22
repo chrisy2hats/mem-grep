@@ -96,7 +96,7 @@ TEST_CASE("Small x64_64 asm program"){
      */
 
     const auto asmProgPath = "./asmTarget";
-    pid_t pid = launchProgram(asmProgPath);
+    pid_t pid = LaunchProgram(asmProgPath);
 
     auto parser = MapParser(pid);
     auto results = parser.ParseMap();
@@ -112,4 +112,19 @@ TEST_CASE("Small x64_64 asm program"){
     REQUIRE(stack.start != NULL_MAPS_ENTRY.start);
 
     kill(pid, SIGKILL);
+}
+
+TEST_CASE("Mandatory sections for every program"){
+  auto has_mandatory_sections = [&] (const pid_t pid,const std::string& exe_name)->void{
+    auto mp = MapParser(pid);
+    auto entires = mp.ParseMap();
+    auto stack = mp.getStoredStack();
+    auto heap = mp.getStoredHeap();
+    REQUIRE(stack!=NULL_MAPS_ENTRY);
+    REQUIRE(!entires.empty());
+    if (exe_name!="asmTarget"){
+      REQUIRE(heap!=NULL_MAPS_ENTRY);
+    }
+  };
+  ForeachTargetProgram(has_mandatory_sections);
 }

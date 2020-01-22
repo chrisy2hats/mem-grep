@@ -42,7 +42,7 @@ TEST_CASE("Search for float") {
 
 TEST_CASE("Find Value on heap") {
   const auto targetPath = "./runUntilManipulatedHeap";
-  pid_t pid = launchProgram(targetPath);
+  pid_t pid = LaunchProgram(targetPath);
   std::cout << "Analysing PID:" << pid << std::endl;
 
   auto parser = MapParser(pid);
@@ -63,7 +63,7 @@ TEST_CASE("Find Value on heap") {
 
 TEST_CASE("Find Value on stack") {
   const auto targetPath = "./runUntilManipulatedStack";
-  pid_t pid = launchProgram(targetPath);
+  pid_t pid = LaunchProgram(targetPath);
 
   std::cout << "Analysing PID:" << pid << std::endl;
   auto parser = MapParser(pid);

@@ -8,7 +8,7 @@
 
 TEST_CASE("BSS: 5 pointers target program") {
   const auto targetPath = "./bssHeapPointers";
-  int pid = launchProgram(targetPath);
+  int pid = LaunchProgram(targetPath);
 
   std::cout << "Analysing PID:" << pid << std::endl;
   auto parser = MapParser(pid);
@@ -32,7 +32,7 @@ TEST_CASE("BSS: 5 pointers target program") {
 
 TEST_CASE("BSS: 0 pointers target program") {
   const auto targetPath = "./runUntilManipulatedStack";
-  int pid = launchProgram(targetPath);
+  int pid = LaunchProgram(targetPath);
 
   std::cout << "Analysing PID:" << pid << std::endl;
   auto parser = MapParser(pid);

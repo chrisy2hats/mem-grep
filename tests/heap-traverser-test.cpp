@@ -9,7 +9,7 @@
 
 TEST_CASE("Multi-layered bss pointers") {
   const auto targetPath = "./multiLayeredBssHeapPointers";
-  pid_t pid = launchProgram(targetPath);
+  pid_t pid = LaunchProgram(targetPath);
   std::cout << "Analysing PID:" << pid << std::endl;
 
   auto parser = MapParser(pid);
