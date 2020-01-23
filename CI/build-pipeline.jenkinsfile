@@ -56,7 +56,7 @@ pipeline {
         }
         stage("CMake"){
             steps{
-                sh "cmake ."
+                sh "cmake . -DBUILD_UNIT_TESTS=ON"
             }
         }
         stage("Build - mem-grep"){

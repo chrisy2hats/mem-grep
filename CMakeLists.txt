@@ -1,7 +1,13 @@
 cmake_minimum_required(VERSION 3.00)
 project(mem-grep)
 
+#pthreads on Unix-like systems
 FIND_PACKAGE (Threads REQUIRED)
+
+option(BUILD_UNIT_TESTS "Build the unit tests and associated programs" OFF)
+if (BUILD_UNIT_TESTS)
+	add_subdirectory(tests)
+endif()
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -fpermissive -g")
@@ -21,76 +27,6 @@ add_executable(mem-grep
         src/filtering/heap-filter.cpp src/filtering/heap-filter.hpp
 	)
 target_link_libraries(mem-grep Threads::Threads)
-
-
-#Programs for manual testing
-project(onstackint C)
-add_executable(onstackint
-        tests/manual-target-programs/onstackint/main.c
-        )
-
-project(onheapint C)
-add_executable(onheapint
-        tests/manual-target-programs/onheapint/main.c
-        )
-
-project(unit-tests)
-if (NOT EXISTS "${PROJECT_SOURCE_DIR}/tests/catch2")
-    message(FATAL_ERROR "Catch2 submodule not initialised.")
-endif ()
-include_directories(tests/catch2/single_include)
-add_executable(unit-tests
-        tests/test_main.cpp
-        tests/null-structs.hpp
-        tests/utils.cpp
-        tests/utils.hpp
-
-        tests/map-parser-test.cpp
-        tests/memory-searcher-test.cpp
-        tests/prerun-checks-test.cpp
-        tests/bss-searcher-test.cpp
-        tests/heap-traverser-test.cpp
-        tests/null-structs.cpp
-        tests/heap-filter-test.cpp
-
-        src/misc/map-parser.cpp src/misc/map-parser.hpp
-        src/misc/remote-memory.cpp src/misc/remote-memory.hpp
-        src/misc/prerun-checks.cpp src/misc/prerun-checks.hpp
-        src/heap-traversing/bss-searcher.cpp src/heap-traversing/bss-searcher.hpp
-        src/misc/malloc-metadata.cpp src/misc/malloc-metadata.hpp
-        src/heap-traversing/heap-traverser.cpp src/heap-traversing/heap-traverser.hpp
-        src/filtering/heap-filter.cpp src/filtering/heap-filter.hpp
-        )
-target_link_libraries(unit-tests Threads::Threads)
-
-set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -pedantic")
-
-#Build sample target-programs to be analysed
-project(unit-tests-target-programs C)
-add_executable(runUntilManipulatedHeap
-        tests/target-programs/runUntilManipulatedHeap.c
-        )
-
-add_executable(bssHeapPointers
-        tests/target-programs/bssHeapPointers.c
-        )
-
-add_executable(runUntilManipulatedStack
-        tests/target-programs/runUntilManipulatedStack.c
-        )
-
-add_executable(multiLayeredBssHeapPointers
-        tests/target-programs/multiLayerBssHeapPointers.c
-        )
-
-#Build basic assembly program for use in testing
-set(CMAKE_NASM_LINK_EXECUTABLE "ld <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
-set(CAN_USE_ASSEMBLER TRUE)
-set(CMAKE_ASM_NASM_OBJECT_FORMAT elf64)
-project("asmTarget" ASM_NASM)
-enable_language(ASM_NASM)
-add_executable("asmTarget" tests/target-programs/asmTarget.asm)
-set_target_properties("asmTarget" PROPERTIES LINKER_LANGUAGE NASM)
 
 add_custom_target(cppcheck
         WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
