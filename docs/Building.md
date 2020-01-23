@@ -1,7 +1,7 @@
 **Building**  
 It should be possible to compile and run mem-grep on any modern Linux distribution  
 Builds have been tested on Ubuntu 18.04, Debian Buster, Fedora 31, OpenSuse Tumbleweed and ArchLinux  
-If you want to be able to run the unit tests also refer to the documentation - Running Unit Tests(TODO)
+If you want to be able to run the unit tests also refer to the documentation - [Building Unit Tests](BuildingUnitTests.md)
 
 **Dependencies**  
 A C++17 compiler (both gcc and clang tested)  
