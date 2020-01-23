@@ -122,7 +122,7 @@ TEST_CASE("Mandatory sections for every program"){
     auto heap = mp.getStoredHeap();
     REQUIRE(stack!=NULL_MAPS_ENTRY);
     REQUIRE(!entires.empty());
-    if (exe_name!="asmTarget"){
+    if (exe_name!="asmTarget" && exe_name != "runUntilManipulatedStack"){
       REQUIRE(heap!=NULL_MAPS_ENTRY);
     }
   };

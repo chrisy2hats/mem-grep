@@ -17,6 +17,10 @@ BssSearcher::BssSearcher(const MAPS_ENTRY& bss_metadata,const pid_t& pid,const s
     // No need to print error message as the constructor will have notified if any parameter is null
     return {};
   }
+  if (heap_metadata.start == nullptr || heap_metadata.end == nullptr) {
+    cerr << "WARNING: BssSearcher passed invalid heap_metadata\n";
+    return {};
+  }
 
   const char* bss_copy = RemoteMemory::Copy(pid_, bss_metadata_.start, bss_metadata_.size);
   assert(bss_copy !=nullptr);
