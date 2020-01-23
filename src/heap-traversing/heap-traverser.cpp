@@ -46,17 +46,18 @@ void HeapTraverser::PrintHeap(
   }
 }
 
-void HeapTraverser::WorkerThread (std::vector<RemoteHeapPointer>& base_pointers,std::atomic<uint64_t>& shared_index){
-	while (shared_index < base_pointers.size()){
-	  // We MUST save the value when we increment shared_index and only use the returned value
-	  // if we reference shared_index directly it could have been incremented by a different
-	  // thread. i.e. "base_pointers.at(shared_index)=..." is unsafe and a race condition but
-	  // "base_pointers.at(current_local_index) is safe
-	  const size_t current_local_index = shared_index++;
+void HeapTraverser::WorkerThread(std::vector<RemoteHeapPointer>& base_pointers,
+		std::atomic<uint64_t>& shared_index) {
+  size_t current_local_index=0;
+  while ((current_local_index= shared_index++)< base_pointers.size()) {
+    // We MUST save the value when we increment shared_index and only use the returned value
+    // if we reference shared_index directly it could have been incremented by a different
+    // thread. i.e. "base_pointers.at(shared_index)=..." is unsafe and a race condition but
+    // "base_pointers.at(current_local_index) is safe
 
-	  base_pointers.at(current_local_index) =
-			  HeapTraverser::FollowPointer(base_pointers.at(current_local_index));
-	}
+    base_pointers.at(current_local_index) =
+		    HeapTraverser::FollowPointer(base_pointers.at(current_local_index));
+  }
 }
 
 std::vector<RemoteHeapPointer> HeapTraverser::TraversePointers(std::vector<RemoteHeapPointer> base_pointers){
