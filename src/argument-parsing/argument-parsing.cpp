@@ -50,11 +50,11 @@ struct CLIArgs ArgumentParser::parseArguments(int argc, char **argv) {
       i++;
       continue;
     }
-    if (strncmp(argv[i], "--search_bss", 12) == 0) {
+    if (strncmp(argv[i], "--SearchBss", 12) == 0) {
       args.search_bss = true;
       continue;
     }
-    if (strncmp(argv[i], "--search_stack", 14) == 0) {
+    if (strncmp(argv[i], "--SearchStack", 14) == 0) {
       args.search_stack = true;
       continue;
     }
