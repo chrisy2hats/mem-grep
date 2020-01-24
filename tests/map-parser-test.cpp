@@ -101,8 +101,8 @@ TEST_CASE("Small x64_64 asm program"){
     auto parser = MapParser(pid);
     auto results = parser.ParseMap();
 
-    struct MAPS_ENTRY stack = NULL_MAPS_ENTRY;
-    struct MAPS_ENTRY heap = NULL_MAPS_ENTRY;
+    struct MapsEntry stack = NULL_MAPS_ENTRY;
+    struct MapsEntry heap = NULL_MAPS_ENTRY;
     stack=parser.getStoredStack();
     heap=parser.getStoredHeap();
 

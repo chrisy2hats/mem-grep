@@ -48,7 +48,7 @@ TEST_CASE("Find Value on heap") {
   auto parser = MapParser(pid);
   auto maps = parser.ParseMap();
 
-  struct MAPS_ENTRY heap = parser.getStoredHeap();
+  struct MapsEntry heap = parser.getStoredHeap();
 
   REQUIRE(heap.start != NULL_MAPS_ENTRY.start);
   REQUIRE(heap.end != NULL_MAPS_ENTRY.end);
@@ -68,7 +68,7 @@ TEST_CASE("Find Value on stack") {
   std::cout << "Analysing PID:" << pid << std::endl;
   auto parser = MapParser(pid);
   auto maps = parser.ParseMap();
-  struct MAPS_ENTRY stack = NULL_MAPS_ENTRY;
+  struct MapsEntry stack = NULL_MAPS_ENTRY;
   stack = parser.getStoredStack();
 
   REQUIRE(stack.start != NULL_MAPS_ENTRY.start);

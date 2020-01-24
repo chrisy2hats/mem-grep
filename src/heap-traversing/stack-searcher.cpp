@@ -2,34 +2,33 @@
 
 using std::cout;
 
-StackSearcher::StackSearcher(const void *stackStart, const MAPS_ENTRY &text, const pid_t pid, const size_t max_heap_obj) :
+StackSearcher::StackSearcher(const void *stackStart, const MapsEntry &text, const pid_t pid,
+		const size_t max_heap_obj) :
 		stackStart_(stackStart),
 		textStart_(text.start),
 		textEnd_(text.end),
 		textSize_((char *)text.start - (char *)text.end),
 		pid_(pid),
-		max_heap_obj_(max_heap_obj)
-{
+		max_heap_obj_(max_heap_obj) {
 }
 
 // If the address is within the .text part of the target binary
-[[nodiscard]] bool StackSearcher::AddrIsInText(const void *addr) const
-{
+[[nodiscard]] bool StackSearcher::AddrIsInText(const void *addr) const {
   const bool IsInText = addr >= textStart_ && addr <= textEnd_;
   return IsInText;
 }
 
-[[nodiscard]] bool StackSearcher::AddrIsOnHeap(const void *addr, const void *heapStart, const void *heapEnd) const
-{
+[[nodiscard]] bool StackSearcher::AddrIsOnHeap(
+		const void *addr, const void *heapStart, const void *heapEnd) const {
   const bool IsOnHeap = addr >= heapStart && addr <= heapEnd;
   return IsOnHeap;
 }
 
-std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(const void *curStackEnd, const MAPS_ENTRY &heap, size_t framesToSearch) const
-{
+std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(
+		const void *curStackEnd, const MapsEntry &heap, size_t framesToSearch) const {
   // Every program has a stack so these should never be null
-  assert(stackStart_!=nullptr);
-  assert(curStackEnd!=nullptr);
+  assert(stackStart_ != nullptr);
+  assert(curStackEnd != nullptr);
 
   if (framesToSearch == 0) {
     framesToSearch = UINTMAX_MAX;
@@ -61,7 +60,8 @@ std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(const void *curSt
 
     // We have to handle pointers to the first byte of the heap differently
     // If we try and access the byte before the pointer to get the size via GetMallocMetadata
-    // We may be accessing memory that doesn't belong to the same segment which can cause this program to SEGFAULT.
+    // We may be accessing memory that doesn't belong to the same segment which can cause this
+    // program to SEGFAULT.
     if (AddrIsOnHeap(addressPointedTo, heap.start, heap.end)) {
       void *actualAddr = (void *)((char *)stackStart_ + i);
 
@@ -72,7 +72,8 @@ std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(const void *curSt
 	cout << "Which points to : " << addressPointedTo << "\n";
 	cout << "Pointer found at stack offset:" << i << "\n";
 	cout << "---------------------------\n";
-	const struct RemoteHeapPointer result = {actualAddr, addressPointedTo, .size_pointed_to = 0};
+	const struct RemoteHeapPointer result = {
+			actualAddr, addressPointedTo, .size_pointed_to = 0};
 	matches.push_back(result);
       } else {
 	size_t sizePointedTo = GetMallocMetadata(addressPointedTo, pid_, max_heap_obj_, true);

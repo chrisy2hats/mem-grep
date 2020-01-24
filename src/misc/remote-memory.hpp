@@ -22,7 +22,7 @@ class RemoteMemory {
   // the entire data section requested It is on the caller to run delete[] on
   // the returned pointer when it is done with the memory assuming nullptr isn't
   // returned
-  static char* Copy( const pid_t& pid, const void* start, const size_t& size);
+  static char* Copy(const pid_t& pid, const void* start, const size_t& size);
 
   // Implementation of templated function must be with definition
   template <typename T>
@@ -46,8 +46,7 @@ class RemoteMemory {
     return nwrite;
   }
   template <typename T>
-  static std::vector<SearchMatch> Search(
-		  pid_t pid, void* start, void* end, T to_find) {
+  static std::vector<SearchMatch> Search(pid_t pid, void* start, void* end, T to_find) {
     size_t mem_size = (size_t)end - (size_t)start;
     const char* mem_area = RemoteMemory::Copy(pid, start, mem_size);
     if (mem_area == nullptr) {
@@ -74,7 +73,7 @@ class RemoteMemory {
   }
 
   template <typename T>
-  static bool Contains( pid_t pid, void* start, void* end, T to_find) {
+  static bool Contains(pid_t pid, void* start, void* end, T to_find) {
     size_t mem_size = (size_t)end - (size_t)start;
     const char* mem_area = RemoteMemory::Copy(pid, start, mem_size);
     if (mem_area == nullptr) {
@@ -88,8 +87,8 @@ class RemoteMemory {
       memcpy(&current, mem_area + i, sizeof(T));
 
       if (current == to_find) {
-        delete[] mem_area;
-        return true;
+	delete[] mem_area;
+	return true;
       }
     }
     delete[] mem_area;

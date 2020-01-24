@@ -14,8 +14,8 @@ TEST_CASE("BSS: 5 pointers target program") {
   auto parser = MapParser(pid);
   auto maps = parser.ParseMap();
 
-  struct MAPS_ENTRY heapMetadata = NULL_MAPS_ENTRY;
-  struct MAPS_ENTRY bss = NULL_MAPS_ENTRY;
+  struct MapsEntry heapMetadata = NULL_MAPS_ENTRY;
+  struct MapsEntry bss = NULL_MAPS_ENTRY;
 
   bss = parser.getStoredBss();
   heapMetadata = parser.getStoredHeap();
@@ -38,8 +38,8 @@ TEST_CASE("BSS: 0 pointers target program") {
   auto parser = MapParser(pid);
   auto maps = parser.ParseMap();
 
-  struct MAPS_ENTRY heapMetadata = NULL_MAPS_ENTRY;
-  struct MAPS_ENTRY bss = NULL_MAPS_ENTRY;
+  struct MapsEntry heapMetadata = NULL_MAPS_ENTRY;
+  struct MapsEntry bss = NULL_MAPS_ENTRY;
 
   heapMetadata = parser.getStoredHeap();
   bss = parser.getStoredBss();

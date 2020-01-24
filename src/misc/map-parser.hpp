@@ -10,7 +10,7 @@
 #include <sstream>
 #include <cassert>
 #include <unistd.h>
-#include <climits> //For PATH_MAX constant
+#include <climits>  //For PATH_MAX constant
 
 // Representing a single line of the /proc/PID/maps file in a struct
 // There will be as many MAPS_ENTRYs as lines in the maps file
@@ -22,7 +22,7 @@
 // 00e03000-00e24000 rw-p 00000000 00:00 0           [heap]
 // 00e24000-011f7000 rw-p 00000000 00:00 0           [heap]
 
-struct MAPS_ENTRY {
+struct MapsEntry {
   void *start;
   void *end;
   std::string permissions;
@@ -33,59 +33,63 @@ struct MAPS_ENTRY {
   size_t size;
 };
 
-std::ostream& operator << (std::ostream &o, const MAPS_ENTRY& m);
+std::ostream &operator<<(std::ostream &o, const MapsEntry &m);
 
 class MapParser {
- public:
+  public:
   explicit MapParser(pid_t pid);
 
-  [[nodiscard]] std::vector<struct MAPS_ENTRY> ParseMap();
-  [[nodiscard]] struct MAPS_ENTRY getStoredStack() const { return stack_; }
+  [[nodiscard]] std::vector<struct MapsEntry> ParseMap();
+  [[nodiscard]] struct MapsEntry getStoredStack() const { return stack_; }
 
-  // TODO a program can have multiple heaps if it is multi-threaded. This function needs to return a std::vector of heaps
-  [[nodiscard]] struct MAPS_ENTRY getStoredHeap() const { return heap_; }
-  [[nodiscard]] struct MAPS_ENTRY getStoredBss() const { return bss_; }
-  [[nodiscard]] struct MAPS_ENTRY getStoredData() const { return data_; }
+  // TODO a program can have multiple heaps if it is multi-threaded. This function needs to return a
+  // std::vector of heaps
+  [[nodiscard]] struct MapsEntry getStoredHeap() const { return heap_; }
+  [[nodiscard]] struct MapsEntry getStoredBss() const { return bss_; }
+  [[nodiscard]] struct MapsEntry getStoredData() const { return data_; }
 
-  [[nodiscard]] std::vector<struct MAPS_ENTRY> getStoredText() const { return text_sections_; }
+  [[nodiscard]] std::vector<struct MapsEntry> getStoredText() const { return text_sections_; }
 
-  [[nodiscard]] std::vector<struct MAPS_ENTRY> getStoredMmap() const { return mmap_sections_; }
+  [[nodiscard]] std::vector<struct MapsEntry> getStoredMmap() const { return mmap_sections_; }
 
- protected:
- private:
+  protected:
+  private:
   const pid_t pid_;
-  const struct MAPS_ENTRY kEmptyMapsEntry =  {nullptr,nullptr,"","","","","",0};
+  const struct MapsEntry kEmptyMapsEntry = {nullptr, nullptr, "", "", "", "", "", 0};
 
-  struct MAPS_ENTRY stack_ = kEmptyMapsEntry;
-  struct MAPS_ENTRY heap_ = kEmptyMapsEntry;
-  struct MAPS_ENTRY bss_ = kEmptyMapsEntry;
-  struct MAPS_ENTRY data_ = kEmptyMapsEntry;
-  std::vector<struct MAPS_ENTRY> text_sections_;
-  std::vector<struct MAPS_ENTRY> mmap_sections_;
+  struct MapsEntry stack_ = kEmptyMapsEntry;
+  struct MapsEntry heap_ = kEmptyMapsEntry;
+  struct MapsEntry bss_ = kEmptyMapsEntry;
+  struct MapsEntry data_ = kEmptyMapsEntry;
+  std::vector<struct MapsEntry> text_sections_;
+  std::vector<struct MapsEntry> mmap_sections_;
   std::string executable_path_;
 
-  //Rudimentary functions that simply check for a certain character in the MAPS_ENTRY.permissions string
-  [[nodiscard]] bool IsExecutable(const MAPS_ENTRY &entry) const;
-  [[nodiscard]] bool IsReadable(const MAPS_ENTRY &entry) const;
-  [[nodiscard]] bool IsWriteable(const MAPS_ENTRY &entry) const;
-  [[nodiscard]] bool IsPrivate(const MAPS_ENTRY &entry) const;
+  // Rudimentary functions that simply check for a certain character in the MapsEntry.permissions
+  // string
+  [[nodiscard]] bool IsExecutable(const MapsEntry &entry) const;
+  [[nodiscard]] bool IsReadable(const MapsEntry &entry) const;
+  [[nodiscard]] bool IsWriteable(const MapsEntry &entry) const;
+  [[nodiscard]] bool IsPrivate(const MapsEntry &entry) const;
 
-  //Higher level functions returning a combination of the above 4 functions and checking the MAPS_ENTRY.file_path
-  [[nodiscard]] bool IsDataEntry(const MAPS_ENTRY &entry) const;
-  [[nodiscard]] bool IsTextEntry(const MAPS_ENTRY &entry) const;
-  [[nodiscard]] bool IsHeapEntry(const MAPS_ENTRY &entry) const;
-  [[nodiscard]] bool IsStackEntry(const MAPS_ENTRY &entry) const;
-  [[nodiscard]] bool IsMmapEntry(const MAPS_ENTRY &entry) const;
-  [[nodiscard]] bool IsBssEntry(const MAPS_ENTRY &entry) const;
+  // Higher level functions returning a combination of the above 4 functions and checking the
+  // MapsEntry.file_path
+  [[nodiscard]] bool IsDataEntry(const MapsEntry &entry) const;
+  [[nodiscard]] bool IsTextEntry(const MapsEntry &entry) const;
+  [[nodiscard]] bool IsHeapEntry(const MapsEntry &entry) const;
+  [[nodiscard]] bool IsStackEntry(const MapsEntry &entry) const;
+  [[nodiscard]] bool IsMmapEntry(const MapsEntry &entry) const;
+  [[nodiscard]] bool IsBssEntry(const MapsEntry &entry) const;
 
-  //Obtain the path of the binary being executed from /proc/PID/exe
+  // Obtain the path of the binary being executed from /proc/PID/exe
   std::string GetExecutablePath();
 
-  // Allows for ParseLine to be unit tested. In normal compiles this is not defined so doesn't break encapsulation
-  // If you try to access ParseLine in the source code you will get errors saying attempting to access private method
+  // Allows for ParseLine to be unit tested. In normal compiles this is not defined so doesn't break
+  // encapsulation If you try to access ParseLine in the source code you will get errors saying
+  // attempting to access private method
 #ifdef UNIT_TEST
- public:
+  public:
 #endif
-  [[nodiscard]] struct MAPS_ENTRY ParseLine(const std::string &line) const;
+  [[nodiscard]] struct MapsEntry ParseLine(const std::string &line) const;
 };
 #endif

@@ -3,7 +3,6 @@
 std::vector<RemoteHeapPointer> HeapFilter::FlattenAndFilter(
 		const std::vector<RemoteHeapPointer>& base_pointers,
 		const std::function<bool(const RemoteHeapPointer&)>& functor) {
-
   const unsigned int hardware_thread_count = std::thread::hardware_concurrency();
   std::vector<std::future<std::vector<RemoteHeapPointer>>> thread_futures(hardware_thread_count);
   std::vector<RemoteHeapPointer> all_thread_matches = {};

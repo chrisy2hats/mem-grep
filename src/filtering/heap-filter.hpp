@@ -10,7 +10,7 @@
 // individual RemoteHeapPointers it only contains the code to walk the heap data structure.
 // The comparision code is passed in as a callable i.e. a lambda
 class HeapFilter {
-  public:
+ public:
   // All RemoteHeapPointers that meet the criteria specified are returned in one single vector.
   // The hierarchy of the heap is lost
   // This function uses all available threads the hardware has
@@ -24,7 +24,7 @@ class HeapFilter {
 		  const std::vector<RemoteHeapPointer>& base_pointers,
 		  const std::function<bool(const RemoteHeapPointer&)>& functor);
 
-  private:
+ private:
   // Recursively follow a single pointer finding matches
   // The function is void as the matches are inserted in the vector passed in
   // This avoids creating a vector for every call to the function and returning it

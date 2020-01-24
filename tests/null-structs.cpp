@@ -1,6 +1,6 @@
 #include "null-structs.hpp"
 
-bool operator==(const MAPS_ENTRY& a, const MAPS_ENTRY& b)
+bool operator==(const MapsEntry& a, const MapsEntry& b)
 {
   if (a.start != b.start) return false;
   if (a.end != b.end) return false;
@@ -12,7 +12,7 @@ bool operator==(const MAPS_ENTRY& a, const MAPS_ENTRY& b)
   return true;
 }
 
-bool operator!=(const MAPS_ENTRY& a, const MAPS_ENTRY& b)
+bool operator!=(const MapsEntry& a, const MapsEntry& b)
 {
   return !(a == b);
 }

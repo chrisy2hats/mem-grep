@@ -6,5 +6,5 @@
 #include <sstream>
 #include <fstream>
 
-[[nodiscard]] bool PreRunCheck(void);
+[[nodiscard]] bool CanRun(void);
 #endif

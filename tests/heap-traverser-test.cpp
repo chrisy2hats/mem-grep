@@ -15,8 +15,8 @@ TEST_CASE("Multi-layered bss pointers") {
   auto parser = MapParser(pid);
   auto maps = parser.ParseMap();
 
-  struct MAPS_ENTRY heapMetadata = NULL_MAPS_ENTRY;
-  struct MAPS_ENTRY bss = NULL_MAPS_ENTRY;
+  struct MapsEntry heapMetadata = NULL_MAPS_ENTRY;
+  struct MapsEntry bss = NULL_MAPS_ENTRY;
   heapMetadata = parser.getStoredHeap();
   bss = parser.getStoredBss();
   const size_t bssSize = (char *)bss.end - (char *)bss.start;
