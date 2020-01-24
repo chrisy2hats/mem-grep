@@ -136,15 +136,15 @@ bool MapParser::IsPrivate(const MAPS_ENTRY& entry) const{
 //But this isn't (notice not executable)
 //55d3cadab000-55d3cadb3000 r--p 000ab000 fd:01 3670594                    /usr/bin/kate
 bool MapParser::IsTextEntry(const MAPS_ENTRY &entry) const {
-    return IsReadable(entry) && IsExecutable(entry) && entry.file_path == executable_path_;
+    return IsReadable(entry) && IsExecutable(entry) && !IsWriteable(entry) && entry.file_path == executable_path_;
 }
 
 bool MapParser::IsHeapEntry(const MAPS_ENTRY &entry) const {
-    return IsReadable(entry) && IsWriteable(entry) && (!IsExecutable(entry)) && entry.file_path == "[heap]";
+    return entry.file_path == "[heap]";
 }
 
 bool MapParser::IsStackEntry(const MAPS_ENTRY &entry) const {
-    return IsReadable(entry) && IsWriteable(entry) && entry.file_path == "[stack]";
+    return entry.file_path == "[stack]";
 }
 
 //Mmaped regions don't have a file path associated
@@ -153,7 +153,7 @@ bool MapParser::IsMmapEntry(const MAPS_ENTRY &entry) const {
 }
 
 bool MapParser::IsBssEntry(const MAPS_ENTRY &entry) const {
-    return IsReadable(entry) && IsWriteable(entry) && !IsExecutable(entry) && entry.file_path == executable_path_;
+    return IsReadable(entry) && IsWriteable(entry) && entry.file_path == executable_path_;
 }
 
 bool MapParser::IsDataEntry(const MAPS_ENTRY &entry) const {
