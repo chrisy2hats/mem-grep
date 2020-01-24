@@ -44,4 +44,4 @@ cmake . -DCMAKE_BUILD_TYPE=Release && make -j $(nproc) mem-grep
 ``
   
 **After building**  
-Once the program is compiled refer to the configure your system as explained in the System Configuration page(TODO)
+Once the program is compiled refer to the configure your system as explained in the System Configuration page [System Configuration](SystemConfiguration.md)

@@ -39,7 +39,7 @@ make -j $(nproc)
   
 **Running the unit tests**  
 If the previously run make command was successful there should be a binary called "unit-tests" in the out directory  
-Ensure your system is correctly configured outlined in here - LinkToSystemConfig(TODO)
+Ensure your system is correctly configured outlined in here - [System Configuration](SystemConfiguration.md)
 Then run the unit tests via  
 ``
 ./out/unit-tests
