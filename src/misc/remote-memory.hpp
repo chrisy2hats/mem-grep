@@ -41,9 +41,9 @@ class RemoteMemory {
       std::cout << "writev failed: " << errno << "\n";
       std::cout << "Error string:" << strerror(errno) << "\n";
       abort();
-    } else {
-      std::cout << "nwrite successful\n";
     }
+    std::cout << "nwrite successful\n";
+    return nwrite;
   }
   template <typename T>
   static std::vector<SearchMatch> Search(
