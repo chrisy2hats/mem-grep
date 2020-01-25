@@ -25,6 +25,7 @@ add_executable(mem-grep
         src/misc/utils.cpp src/misc/utils.hpp
         src/misc/remote-memory.cpp src/misc/remote-memory.hpp
         src/filtering/heap-filter.cpp src/filtering/heap-filter.hpp
+		src/filtering/lambda-creator.cpp src/filtering/lambda-creator.hpp
 	)
 target_link_libraries(mem-grep Threads::Threads)
 
