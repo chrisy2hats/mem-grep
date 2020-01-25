@@ -1,4 +1,5 @@
 cmake_minimum_required(VERSION 3.00)
+project(unit-tests)
 
 FIND_PACKAGE (Threads REQUIRED)
 
@@ -6,22 +7,12 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -fpermissive -g")
 set(EXECUTABLE_OUTPUT_PATH "out")
 
-#Programs for manual testing
-project(onstackint C)
-add_executable(onstackint
-        manual-target-programs/onstackint/main.c
-        )
 
-project(onheapint C)
-add_executable(onheapint
-        manual-target-programs/onheapint/main.c
-        )
-
-project(unit-tests)
 if (NOT EXISTS "${PROJECT_SOURCE_DIR}/catch2")
     message(FATAL_ERROR "Catch2 submodule not initialised.")
 endif ()
 include_directories(catch2/single_include)
+
 add_executable(unit-tests
         map-parser-test.cpp
         memory-searcher-test.cpp
@@ -44,6 +35,7 @@ add_executable(unit-tests
         ../src/heap-traversing/heap-traverser.cpp ../src/heap-traversing/heap-traverser.hpp
         ../src/filtering/heap-filter.cpp ../src/filtering/heap-filter.hpp
         )
+
 target_link_libraries(unit-tests Threads::Threads)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -pedantic")
@@ -65,6 +57,18 @@ add_executable(runUntilManipulatedStack
 add_executable(multiLayeredBssHeapPointers
         target-programs/multiLayerBssHeapPointers.c
         )
+
+#Programs for manual testing
+project(onstackint C)
+add_executable(onstackint
+        manual-target-programs/onstackint/main.c
+        )
+
+project(onheapint C)
+add_executable(onheapint
+        manual-target-programs/onheapint/main.c
+        )
+
 
 #Build basic assembly program for use in testing
 set(CMAKE_NASM_LINK_EXECUTABLE "ld <LINK_FLAGS> <OBJECTS> -o <TARGET> <LINK_LIBRARIES>")
