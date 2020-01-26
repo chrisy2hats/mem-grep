@@ -4,7 +4,7 @@
 #include "heap-traversing/stack-searcher.hpp"
 #include "heap-traversing/heap-traverser.hpp"
 #include "argument-parsing/argument-parsing.hpp"
-#include "misc/utils.hpp"
+#include "misc/structs.hpp"
 
 using std::cout;
 using std::cerr;

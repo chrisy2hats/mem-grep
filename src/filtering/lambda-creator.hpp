@@ -1,6 +1,5 @@
-#include "../argument-parsing/query-parser.hpp"
 #include "../misc/remote-memory.hpp"
-#include "../misc/utils.hpp"
+#include "../misc/structs.hpp"
 
 // Class to provide a lambda to compare a given RemoteHeapPointer vs the parameters specified in the
 // query struct

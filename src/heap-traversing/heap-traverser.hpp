@@ -3,7 +3,7 @@
 #include "../misc/map-parser.hpp"
 #include "../misc/remote-memory.hpp"
 #include "../misc/malloc-metadata.hpp"
-#include "../misc/utils.hpp"
+#include "../misc/structs.hpp"
 
 #include <iostream>
 #include <vector>

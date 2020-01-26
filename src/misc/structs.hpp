@@ -3,6 +3,7 @@
 #include <iostream>
 #include <vector>
 #include <functional>
+#include <variant>
 
 // A pointer to heap memory in the remote process
 // The pointer may be from the stack, from the .bss or found from traversing the heap
@@ -10,11 +11,11 @@
 struct RemoteHeapPointer {
   // The address in the remote pointer where this pointer is stored. This is the 8 byte address NOT what it pointers to
   // So if the remote program has the source code "int* i = new int;" then this is &i
-  void * actual_address =nullptr;
+  void* actual_address = nullptr;
 
   // What the actual_address pointers to. So the 8 bytes inside actual_address
   // So if the remote program has the source code "int* i = new int;" then this is i
-  void * points_to =nullptr;  // The heap location pointed to
+  void* points_to = nullptr;  // The heap location pointed to
 
   // The size of the allocation this points to on the heap
   // This SHOULD never be below 32 bytes as glibc never allocates less than 32 bytes
@@ -29,22 +30,27 @@ struct RemoteHeapPointer {
 
   // This contains pointers to other parts of the heap that are stored in heap memory pointed to
   // This is different to total_sub_pointers as it does NOT include pointers found by traversing pointers in the initial block pointed to
-  std::vector<RemoteHeapPointer> contains_pointers_to ={};
-
-  // For performance reasons the section of memory from the remote process MAY be stored
-  // rather than making a fresh copy every time it needs to be accessed
-  // This copy is used when finding changes in heap memory since last scans
-  // All code utilising this variable MUST be able to handle this variable being nullptr
-  void* copy=nullptr;
+//  std::vector<RemoteHeapPointer> contains_pointers_to = std::vector<RemoteHeapPointer>(16);
+  std::vector<RemoteHeapPointer> contains_pointers_to;
 };
 
 // Rudimentary overload of << so that we can "std::cout <<" a RemoteHeapPointer
 std::ostream& operator << (std::ostream &o, const RemoteHeapPointer& p);
 
-//std::vector<RemoteHeapPointer> flat_filter(const std::vector<const RemoteHeapPointer>& ptr, const std::function<bool(const RemoteHeapPointer&)>& func);
-std::vector<RemoteHeapPointer> flat_filter(const RemoteHeapPointer& ptr, const std::function<bool(const RemoteHeapPointer&)>& func);
+//All valid types that the user can ask to search for or substitute
+typedef std::variant<int,float,double> ValidTypes;
 
-std::vector<RemoteHeapPointer> filter_pointer(const RemoteHeapPointer& ptr, const std::function<bool(const RemoteHeapPointer&)>& func,
-					      std::vector<RemoteHeapPointer>& matches);
-//RemoteHeapPointer filter(const RemoteHeapPointer& p);
+struct Substitution {
+  const ValidTypes from;
+  const ValidTypes to;
+};
+
+// The user can provide criteria to filter output by either from CLI arguments or via the GUI
+// Both CLI and GUIs use this struct to represent the users query
+struct Query{
+  size_t min_size;
+  size_t max_size;
+  std::vector<ValidTypes> must_contain;
+  std::vector<Substitution> subsitutions;
+};
 #endif	// MEM_GREP_UTILS_HPP

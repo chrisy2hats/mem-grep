@@ -1,6 +1,6 @@
 #ifndef MEMGREP_HEAP_FILTER
 #define MEMGREP_HEAP_FILTER
-#include "../misc/utils.hpp"
+#include "../misc/structs.hpp"
 #include <future>
 
 // Class providing functions to filter the extracted heap by any given condition similar to

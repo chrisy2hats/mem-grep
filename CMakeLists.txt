@@ -22,7 +22,7 @@ add_executable(mem-grep
         src/heap-traversing/stack-searcher.cpp src/heap-traversing/stack-searcher.hpp
         src/heap-traversing/heap-traverser.cpp src/heap-traversing/heap-traverser.hpp
         src/argument-parsing/argument-parsing.cpp src/argument-parsing/argument-parsing.hpp
-        src/misc/utils.cpp src/misc/utils.hpp
+		src/misc/structs.cpp src/misc/structs.hpp
         src/misc/remote-memory.cpp src/misc/remote-memory.hpp
         src/filtering/heap-filter.cpp src/filtering/heap-filter.hpp
 		src/filtering/lambda-creator.cpp src/filtering/lambda-creator.hpp
