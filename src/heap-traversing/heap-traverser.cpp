@@ -108,9 +108,11 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
 		      GetMallocMetadata(local_address_pointed_to, pid_, max_heap_obj_, false, true);
 
       if (IsAlreadyVisited(local_address_pointed_to))
-	continue;
+    	continue;
       else
-	SetAlreadyVisited(local_address_pointed_to);
+	    SetAlreadyVisited(local_address_pointed_to);
+
+      if (pointed_to_size==0 || pointed_to_size > max_heap_obj_) continue;
 
       current_level_pointers.push_back({.actual_address = actual_address,
 		      .points_to = address_pointed_to,
@@ -122,6 +124,7 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
 
   for (auto& j : current_level_pointers) {
     const struct RemoteHeapPointer p = FollowPointer(j);
+    if (p.size_pointed_to==0 || p.size_pointed_to > max_heap_obj_)continue;
     base.total_sub_pointers += p.total_sub_pointers;
     base.contains_pointers_to.push_back(p);
   }

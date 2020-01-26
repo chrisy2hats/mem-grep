@@ -42,6 +42,8 @@ BssSearcher::BssSearcher(
       void *actual_address = (void *)((char *)bss_metadata_.start + i);
       const size_t kSizePointedTo = GetMallocMetadata(kAddressPointedTo, pid_, max_heap_obj_);
 
+      if (kSizePointedTo == 0 || kSizePointedTo > max_heap_obj_)
+	continue;
       const struct RemoteHeapPointer matching_pointer = {.actual_address = actual_address,
 		      .points_to = kAddressPointedTo,
 		      .size_pointed_to = kSizePointedTo,

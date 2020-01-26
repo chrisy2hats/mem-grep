@@ -77,6 +77,8 @@ std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(
 	matches.push_back(result);
       } else {
 	size_t sizePointedTo = GetMallocMetadata(addressPointedTo, pid_, max_heap_obj_, true);
+	if (sizePointedTo == 0 || sizePointedTo > max_heap_obj_)
+	  continue;
 	cout << "---------------------------\n";
 	cout << "Stack pointer to heap memory found\n";
 	cout << "Pointer memory is at: " << actualAddr << "\n";
