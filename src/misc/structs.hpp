@@ -39,6 +39,18 @@ std::ostream& operator << (std::ostream &o, const RemoteHeapPointer& p);
 
 //All valid types that the user can ask to search for or substitute
 typedef std::variant<int,float,double> ValidTypes;
+struct ValidTypesVisitor
+{
+  size_t operator()(int) const {
+    return sizeof(int);
+  }
+  size_t operator()(double) const {
+    return sizeof(double);
+  }
+  size_t operator()(float) const {
+    return sizeof(float);
+  }
+};
 
 struct Substitution {
   const ValidTypes from;

@@ -1,34 +1,32 @@
 #include "lambda-creator.hpp"
-#include "../misc/remote-memory.hpp"
 
 //   Many lambdas which handle different queries.
 //   Below is a list of the different lambdas that may be returned and what scenarios they cover
-//   1 Minimum and maximum size specified and all unique must_contain values
-//   2 TODO Minimum and maximum size specified and must_contain with duplicates i.e. >32 && < 64 &&
+//   1 Only size of objects specified i.e. >100 && < 2000
+//   2 Minimum and maximum size specified and all unique must_contain values
+//   3 Minimum and maximum size specified and must_contain with duplicates i.e. >32 && < 64 &&
 //   must_contain 100,100
-//   3 TODO Only size of objects specified i.e. >100 && < 2000
-//   4 TODO no size specified only must_contain members
-//   TODO check values of Query object to find optimal lambda
 
 std::function<bool(const RemoteHeapPointer&)> LambdaCreator::GetFilterLambda(
 		const pid_t pid, const Query& query) {
-  // Scenario 1
-  // Size requirements specified and unique must_contain values
-  const auto size_with_must_contain = [&, query, pid](const RemoteHeapPointer& ptr) -> bool {
-    const bool correct_size =
-		    ptr.size_pointed_to >= query.min_size && ptr.size_pointed_to <= query.max_size;
-    if (!correct_size)
-      return false;
-
-    for (const auto i : query.must_contain) {
-      const bool contains = RemoteMemory::Contains(
-		      pid, ptr.points_to, (char*)ptr.points_to + ptr.size_pointed_to, i);
-      if (!contains)
+  if (query.must_contain.empty()) {
+    // Scenario 1
+    const auto only_check_size = [&, query](const RemoteHeapPointer& ptr) -> bool {
+      return ptr.size_pointed_to >= query.min_size && ptr.size_pointed_to <= query.max_size;
+    };
+    return only_check_size;
+  } else {
+    // Scenario 2 and 3
+    const auto check_size_and_contains = [&, query, pid](const RemoteHeapPointer& ptr) -> bool {
+      const bool correct_size = ptr.size_pointed_to >= query.min_size &&
+				ptr.size_pointed_to <= query.max_size;
+      if (!correct_size)
 	return false;
-    }
 
-    return true;
-  };
+      const bool contains_all = RemoteMemory::Contains(pid, ptr, query.must_contain);
+      return contains_all;
+    };
 
-  return size_with_must_contain;
+    return check_size_and_contains;
+  }
 }

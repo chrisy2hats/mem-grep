@@ -47,3 +47,37 @@ char* RemoteMemory::Copy(const pid_t& pid, const void* start, const size_t& size
   }
   return mem_area;
 }
+
+template <typename T>
+ssize_t FindFirst(const char* start, const size_t size, T to_find) {
+  const size_t sizeof_current = std::visit(ValidTypesVisitor{},to_find);
+  T current;
+  for (size_t i = 0; i < size; i += sizeof_current){
+    current = start[i];
+    if (current == to_find) {
+      return i;
+    }
+  }
+  return -1;
+}
+
+bool RemoteMemory::Contains(const pid_t pid, const RemoteHeapPointer& ptr,
+		const std::vector<ValidTypes>& contains) {
+
+  char* ptr_copy = RemoteMemory::Copy(pid, ptr.points_to, ptr.size_pointed_to);
+
+  for (const auto& i : contains) {
+    const auto offset = FindFirst(ptr_copy, ptr.size_pointed_to, i);
+
+    //We failed to find a required element
+    if (offset == -1)
+      return false;
+
+    // Set the currently found match to 0 so if the user asks to find 2 of the same value the same memory location
+    // won't match for both
+    ptr_copy[offset] = 0;
+  }
+
+  delete[] ptr_copy;
+  return true;
+}

@@ -25,6 +25,8 @@ class RemoteMemory {
   // the returned pointer when it is done with the memory assuming nullptr isn't
   // returned
   static char* Copy(const pid_t& pid, const void* start, const size_t& size);
+  static bool Contains(const pid_t pid, const RemoteHeapPointer& ptr,
+		  const std::vector<ValidTypes>& contains);
 
   // Implementation of templated function must be with definition
   template <typename T>
@@ -71,29 +73,6 @@ class RemoteMemory {
     }
     delete[] mem_area;
     return results;
-  }
-
-  template <typename T>
-  static bool Contains(pid_t pid, void* start, void* end, T to_find) {
-    size_t mem_size = (size_t)end - (size_t)start;
-    const char* mem_area = RemoteMemory::Copy(pid, start, mem_size);
-    if (mem_area == nullptr) {
-      std::cerr << "RemoteMemory::Copy returned nullptr\n";
-      delete[] mem_area;
-      return false;
-    }
-
-    for (size_t i = 0; i < mem_size; i += sizeof(T)) {
-      T current = mem_area[i];
-      memcpy(&current, mem_area + i, sizeof(T));
-
-      if (current == to_find) {
-	delete[] mem_area;
-	return true;
-      }
-    }
-    delete[] mem_area;
-    return false;
   }
 };
 #endif	// MEMGREP_REMOTE_MEMORY
