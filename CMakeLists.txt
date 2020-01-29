@@ -10,7 +10,8 @@ if (BUILD_UNIT_TESTS)
 endif()
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -fpermissive -g")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough")
+set(CMAKE_CXX_FLAGS_RELEASE "-O2 -march=native")
 set(EXECUTABLE_OUTPUT_PATH "out")
 
 add_executable(mem-grep
