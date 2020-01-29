@@ -71,8 +71,9 @@ std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(const void *curre
       const RemoteHeapPointer heap_pointer = {.actual_address = actual_address,
 		      .points_to = address_pointed_to,
 		      .size_pointed_to = size_pointed_to,
-		      .contains_pointers_to = {},
-		      .total_sub_pointers = 0};
+		      .total_sub_pointers = 0,
+		      .contains_pointers_to = {}
+      };
 
       pointers_to_heap.push_back(heap_pointer);
 
