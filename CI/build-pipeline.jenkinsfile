@@ -1,3 +1,4 @@
+#!/usr/bin/groovy
 
 //Jenkins plugins needed:
 //Valgrind docker pipelines cppcheck
@@ -33,7 +34,7 @@ pipeline {
     }
     options{
         buildDiscarder(logRotator(numToKeepStr: '14'))
-        timeout(time: 5, unit: 'MINUTES') 
+        timeout(time: 10, unit: 'MINUTES') 
     }
     stages{
         stage("Install Dependencies"){

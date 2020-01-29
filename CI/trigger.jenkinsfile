@@ -1,3 +1,4 @@
+#!/usr/bin/groovy
 
 //Tick boxes for each configured distribution. The required parameters are passed to the main pipeline for each distro.
 
