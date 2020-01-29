@@ -103,19 +103,6 @@ struct CLIArgs ArgumentParser::parseArguments(int argc, char **argv) {
   return args;
 }
 
-pid_t ArgumentParser::pidof(const std::string &program) {
-  // Calling the system command pidof here is dirty but gets the job done.
-  // The proper way to do this would be to iterate over every directory
-  // In /proc/ but that is very long winded
-  const std::string command = "pidof " + program;
-  char result[15];
-  FILE *cmd = popen(command.c_str(), "r");
-  fgets(result, 15, cmd);
-  const pid_t pid = strtoul(result, NULL, 10);
-  pclose(cmd);
-  return pid;
-}
-
 pid_t ArgumentParser::pid(const std::string &pidStr) {
   const pid_t pid = std::stoul(pidStr);
   cout << "PID parsed as:" << pid << '\n';

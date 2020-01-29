@@ -15,7 +15,7 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -march=native")
 set(EXECUTABLE_OUTPUT_PATH "out")
 
 add_executable(mem-grep
-        src/main.cpp
+        src/main.cpp src/main.hpp
         src/misc/map-parser.cpp src/misc/map-parser.hpp
         src/heap-traversing/bss-searcher.cpp src/heap-traversing/bss-searcher.hpp
         src/misc/malloc-metadata.cpp src/misc/malloc-metadata.hpp
@@ -27,7 +27,8 @@ add_executable(mem-grep
         src/misc/remote-memory.cpp src/misc/remote-memory.hpp
         src/filtering/heap-filter.cpp src/filtering/heap-filter.hpp
 		src/filtering/lambda-creator.cpp src/filtering/lambda-creator.hpp
-		src/misc/utils.hpp)
+		src/misc/utils.hpp src/misc/utils.cpp
+		)
 target_link_libraries(mem-grep Threads::Threads)
 
 add_custom_target(cppcheck

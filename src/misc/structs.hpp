@@ -39,6 +39,8 @@ std::ostream& operator << (std::ostream &o, const RemoteHeapPointer& p);
 
 //All valid types that the user can ask to search for or substitute
 typedef std::variant<int,float,double> ValidTypes;
+
+//Allows for runtime equivalent of sizeof
 struct ValidTypesVisitor
 {
   size_t operator()(int) const {
@@ -60,6 +62,14 @@ struct Substitution {
 // The user can provide criteria to filter output by either from CLI arguments or via the GUI
 // Both CLI and GUIs use this struct to represent the users query
 struct Query{
+  pid_t pid;
+  bool search_bss;
+  bool search_stack;
+  bool traverse_bss_pointers;
+  bool traverse_stack_pointers;
+  size_t stack_frames_to_search;
+  size_t max_heap_obj_size;
+
   size_t min_size;
   size_t max_size;
   std::vector<ValidTypes> must_contain;

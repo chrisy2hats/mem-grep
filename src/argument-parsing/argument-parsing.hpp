@@ -4,6 +4,7 @@
 #include <string>
 #include <sys/types.h>
 #include <cstring>
+#include "../misc/utils.hpp"
 
 struct CLIArgs {
   bool search_bss = false;
@@ -17,7 +18,6 @@ struct CLIArgs {
 
 class ArgumentParser {
   private:
-  pid_t static pidof(const std::string& program);
   pid_t static pid(const std::string& pidStr);
 
   // 8KB
