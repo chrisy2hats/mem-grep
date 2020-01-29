@@ -5,7 +5,7 @@
 #include "utils.hpp"
 
 TEST_CASE("Exclude none"){
-  auto no_exclusions_returns_all = [](pid_t pid,const std::string& exe) {
+  auto no_exclusions_returns_all = [](pid_t pid,const std::string&) {
     auto m = MapParser(pid);
     auto entries = m.ParseMap();
     auto bss_metadata = m.getStoredBss();
@@ -45,7 +45,7 @@ TEST_CASE("Has child pointers"){
 }
 
 TEST_CASE("Single and multi thread same result") {
-  auto single_and_multi = [](const pid_t pid, const std::string& exe) {
+  auto single_and_multi = [](const pid_t pid, const std::string&) {
     auto m = MapParser(pid);
     auto entries = m.ParseMap();
     auto bss_metadata = m.getStoredBss();
@@ -57,7 +57,7 @@ TEST_CASE("Single and multi thread same result") {
     auto traverser = HeapTraverser(pid, heap_metadata, 2048);
     const std::vector<RemoteHeapPointer> traversed = traverser.TraversePointers(bss_pointers);
 
-    auto MatchAll = [](const RemoteHeapPointer& ptr) -> bool { return true; };
+    auto MatchAll = [](const RemoteHeapPointer&) -> bool { return true; };
     const auto multi_thread_match_all = HeapFilter::FlattenAndFilter(traversed, MatchAll);
     const auto single_thread_match_all =
 		    HeapFilter::FlattenAndFilterSingleThreaded(traversed, MatchAll);

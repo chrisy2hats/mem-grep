@@ -41,7 +41,12 @@ TEST_CASE("Don't match one address twice") {
   char *mem_area = new char[kilobyte];
   bzero(mem_area, kilobyte);
   RemoteHeapPointer ptr = {
-		  .points_to = mem_area, .size_pointed_to = kilobyte, .actual_address = &mem_area};
+		  .actual_address = &mem_area,
+		  .points_to = mem_area,
+		  .size_pointed_to = kilobyte,
+		  .total_sub_pointers=0,
+		  .contains_pointers_to={}
+  };
 
   // Searching for 2 100's when only one 100 is in the area shouldn't match
   const int hundred = 100;
@@ -54,8 +59,14 @@ TEST_CASE("Don't match one address twice") {
 TEST_CASE("Do match 2 different address"){
   char *mem_area = new char[kilobyte];
   bzero(mem_area, kilobyte);
+
   RemoteHeapPointer ptr = {
-		  .points_to = mem_area, .size_pointed_to = kilobyte, .actual_address = &mem_area};
+		  .actual_address = &mem_area,
+		  .points_to = mem_area,
+		  .size_pointed_to = kilobyte,
+		  .total_sub_pointers=0,
+		  .contains_pointers_to={}
+  };
   const int hundred = 100;
   const std::vector<ValidTypes> must_contain = {hundred, hundred};
   mem_area[20] = hundred;
@@ -76,10 +87,8 @@ TEST_CASE("Find Value on heap") {
   REQUIRE(heap.start != NULL_MAPS_ENTRY.start);
   REQUIRE(heap.end != NULL_MAPS_ENTRY.end);
   const uint32_t to_find = 127127;
-  void *start = (void *)heap.start;
-  void *end = (void *)heap.end;
   const size_t size = (size_t)SubFromVoid(heap.end,heap.start);
-  auto results = RemoteMemory::Search(pid,start, size, to_find);
+  auto results = RemoteMemory::Search(pid,heap.start, size, to_find);
 
   REQUIRE(results.size() == 1);
   kill(pid, SIGKILL);
@@ -97,10 +106,8 @@ TEST_CASE("Find Value on stack") {
   REQUIRE(stack.start != NULL_MAPS_ENTRY.start);
   REQUIRE(stack.end != NULL_MAPS_ENTRY.end);
   const uint32_t to_find = 127127;
-  void *start = (void *)stack.start;
-  void *end = (void *)stack.end;
   const auto size = (size_t)SubFromVoid(stack.end,stack.start);
-  auto results = RemoteMemory::Search(pid,start, size, to_find);
+  auto results = RemoteMemory::Search(pid,stack.start, size, to_find);
 
   REQUIRE(results.size() == 1);
   kill(pid, SIGKILL);

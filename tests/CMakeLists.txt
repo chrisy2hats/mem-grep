@@ -9,7 +9,7 @@ set(EXECUTABLE_OUTPUT_PATH "out")
 
 
 if (NOT EXISTS "${PROJECT_SOURCE_DIR}/catch2")
-    message(FATAL_ERROR "Catch2 submodule not initialised.")
+    message(FATAL_ERROR "Catch2 submodule not initialised. Please refer to https://github.com/ChrisFoster4/mem-grep/blob/master/docs/BuildingUnitTests.md")
 endif ()
 include_directories(catch2/single_include)
 
