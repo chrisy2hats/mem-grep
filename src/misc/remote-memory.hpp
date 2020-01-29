@@ -5,6 +5,8 @@
 #include <cassert>
 #include <sys/uio.h>
 #include <cstring>
+#include "structs.hpp"
+#include "utils.hpp"
 
 struct SearchMatch {
   size_t Offset;  // Offset from the start of it's block of memory
@@ -46,9 +48,8 @@ class RemoteMemory {
     return nwrite;
   }
   template <typename T>
-  static std::vector<SearchMatch> Search(pid_t pid, void* start, void* end, T to_find) {
-    size_t mem_size = (size_t)end - (size_t)start;
-    const char* mem_area = RemoteMemory::Copy(pid, start, mem_size);
+  static std::vector<SearchMatch> Search(pid_t pid, void* start, const size_t size, T to_find) {
+    const char* mem_area = RemoteMemory::Copy(pid, start, size);
     if (mem_area == nullptr) {
       std::cerr << "RemoteMemory::Copy returned nullptr\n";
       delete[] mem_area;
@@ -57,7 +58,7 @@ class RemoteMemory {
 
     auto results = std::vector<struct SearchMatch>();
     size_t offset = 0;
-    for (size_t i = 0; i < mem_size; i += sizeof(T)) {
+    for (size_t i = 0; i < size; i += sizeof(T)) {
       T current = mem_area[i];
       memcpy(&current, mem_area + i, sizeof(T));
 
