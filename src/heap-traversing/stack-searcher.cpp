@@ -2,102 +2,87 @@
 
 using std::cout;
 
-StackSearcher::StackSearcher(const void *stackStart, const MapsEntry &text, const pid_t pid,
-		const size_t max_heap_obj) :
-		stackStart_(stackStart),
-		textStart_(text.start),
-		textEnd_(text.end),
-		textSize_((char *)text.start - (char *)text.end),
+StackSearcher::StackSearcher(const void *stackStart, const MapsEntry &text,
+		const pid_t pid, const size_t max_heap_obj) :
+		stack_start_(stackStart),
+		text_start_(text.start),
+		text_end_(text.end),
+		text_size_((size_t)SubFromVoid(text.start,text.end)),
 		pid_(pid),
-		max_heap_obj_(max_heap_obj) {
-}
+		max_heap_obj_(max_heap_obj) {}
 
 // If the address is within the .text part of the target binary
-[[nodiscard]] bool StackSearcher::AddrIsInText(const void *addr) const {
-  const bool IsInText = addr >= textStart_ && addr <= textEnd_;
+// If an address is within the .text it is executable code which means it is the address of a
+// function or a return address
+[[nodiscard]] bool StackSearcher::AddressIsInText(const void *address) const {
+  const bool IsInText = address >= text_start_ && address <= text_end_;
   return IsInText;
 }
 
-[[nodiscard]] bool StackSearcher::AddrIsOnHeap(
-		const void *addr, const void *heapStart, const void *heapEnd) const {
-  const bool IsOnHeap = addr >= heapStart && addr <= heapEnd;
+[[nodiscard]] bool StackSearcher::AddressIsOnHeap(
+		const void *address, const void *heap_start, const void *heap_end) const {
+  const bool IsOnHeap = address >= heap_start && address <= heap_end;
   return IsOnHeap;
 }
 
-std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(
-		const void *curStackEnd, const MapsEntry &heap, size_t framesToSearch) const {
+std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(const void *current_stack_end,
+		const MapsEntry &heap, size_t frames_to_search) const {
   // Every program has a stack so these should never be null
-  assert(stackStart_ != nullptr);
-  assert(curStackEnd != nullptr);
+  assert(stack_start_ != nullptr);
+  assert(current_stack_end != nullptr);
 
-  if (framesToSearch == 0) {
-    framesToSearch = UINTMAX_MAX;
-  }
-  size_t framesSearched = 0;
+  if (frames_to_search == 0)
+    frames_to_search = std::numeric_limits<size_t>::max();
 
-  const size_t curStackSize = (char *)curStackEnd - (char *)stackStart_;
-  const char *stackCopy = RemoteMemory::Copy(pid_, stackStart_, curStackSize);
+  assert(current_stack_end > stack_start_);
+  const auto kCurrentStackSize = (size_t)(SubFromVoid(current_stack_end, stack_start_));
+  const char *kStackCopy = RemoteMemory::Copy(pid_, stack_start_, kCurrentStackSize);
 
-  auto matches = std::vector<RemoteHeapPointer>();
-  size_t zeroCount = 0;
-  for (size_t i = 0; i < curStackSize; i += (sizeof(void *))) {
+  size_t frames_searched = 0;
+  auto pointers_to_heap = std::vector<RemoteHeapPointer>();
+  for (size_t i = 0; i < kCurrentStackSize; i += (sizeof(void *))) {
     size_t current = 0;
-    memcpy(&current, (char *)stackCopy + i, sizeof(void *));
+    memcpy(&current, (char *)kStackCopy + i, sizeof(void *));
     if (current == 0) {
-      zeroCount++;
       continue;
     }
 
     /*If our target programs source has a function that has a pointer to a heap object
     Like
-    void foobar(){
 	int* x = new int;
-    }
-    then pointerLocation is &x and addressPointedTo is x
+    then pointer_location is &x and address_pointed_to is x
     */
-    auto pointerLocation = (void **)((char *)stackCopy + i);
-    auto addressPointedTo = (void *)*pointerLocation;
+    const auto pointer_location = (void **)AddToVoid(kStackCopy, i);
+    const auto address_pointed_to = (void *)*pointer_location;
 
-    // We have to handle pointers to the first byte of the heap differently
-    // If we try and access the byte before the pointer to get the size via GetMallocMetadata
-    // We may be accessing memory that doesn't belong to the same segment which can cause this
-    // program to SEGFAULT.
-    if (AddrIsOnHeap(addressPointedTo, heap.start, heap.end)) {
-      void *actualAddr = (void *)((char *)stackStart_ + i);
+    if (AddressIsOnHeap(address_pointed_to, heap.start, heap.end)) {
+      size_t size_pointed_to = 0;
 
-      if (addressPointedTo == heap.start) {
-	cout << "---------------------------\n";
-	cout << "Stack pointer to the start of the heap found\n";
-	cout << "Pointer memory is at: " << actualAddr << "\n";
-	cout << "Which points to : " << addressPointedTo << "\n";
-	cout << "Pointer found at stack offset:" << i << "\n";
-	cout << "---------------------------\n";
-	const struct RemoteHeapPointer result = {
-			actualAddr, addressPointedTo, .size_pointed_to = 0};
-	matches.push_back(result);
-      } else {
-	size_t sizePointedTo = GetMallocMetadata(addressPointedTo, pid_, max_heap_obj_, true);
-	if (sizePointedTo == 0 || sizePointedTo > max_heap_obj_)
+      // We have to handle pointers to the first byte of the heap differently
+      // If we try and access the byte before the pointer to get the size via GetMallocMetadata
+      // We may be accessing memory that doesn't belong to the same segment which can cause this
+      // program to SEGFAULT as that memory may not belong to the PID specified to process_vm_readv
+      if (address_pointed_to != heap.start) {
+	size_pointed_to = GetMallocMetadata(address_pointed_to, pid_, max_heap_obj_);
+	if (size_pointed_to == 0 || size_pointed_to > max_heap_obj_)
 	  continue;
-	cout << "---------------------------\n";
-	cout << "Stack pointer to heap memory found\n";
-	cout << "Pointer memory is at: " << actualAddr << "\n";
-	cout << "Which points to : " << addressPointedTo << "\n";
-	cout << "Pointer found at stack offset:" << i << "\n";
-	cout << "Which points to block of size:" << sizePointedTo << "\n";
-	cout << "---------------------------\n";
-	const struct RemoteHeapPointer result = {actualAddr, addressPointedTo, sizePointedTo};
-	matches.push_back(result);
       }
+      void *actual_address = AddToVoid(stack_start_, i);
+      const RemoteHeapPointer heap_pointer = {.actual_address = actual_address,
+		      .points_to = address_pointed_to,
+		      .size_pointed_to = size_pointed_to,
+		      .contains_pointers_to = {},
+		      .total_sub_pointers = 0};
 
-    } else if (AddrIsInText(addressPointedTo)) {
-      cout << "Frame end found return addr to :" << addressPointedTo << "\n";
-      framesSearched++;
-      if (framesSearched > framesToSearch) {
+      pointers_to_heap.push_back(heap_pointer);
+
+    } else if (AddressIsInText(address_pointed_to)) {
+      frames_searched++;
+      if (frames_searched > frames_to_search) {
 	break;
       }
     }
   }
-  delete[] stackCopy;
-  return matches;
+  delete[] kStackCopy;
+  return pointers_to_heap;
 }

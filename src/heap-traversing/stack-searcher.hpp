@@ -1,8 +1,10 @@
 #ifndef MEMGREP_STACK_SEARCHER
 #define MEMGREP_STACK_SEARCHER
 #include <vector>
+#include <limits>
 #include "bss-searcher.hpp"
 #include "../misc/map-parser.hpp"
+#include "../misc/utils.hpp"
 
 class StackSearcher {
  public:
@@ -12,16 +14,16 @@ class StackSearcher {
 
   // Searching 0 frames means search the entire stack
   std::vector<RemoteHeapPointer> findHeapPointers(
-		  const void *curStackEnd, const MapsEntry &heap, size_t framesToSearch = 0) const;
+		  const void *current_stack_end, const MapsEntry &heap, size_t frames_to_search = 0) const;
  private:
-  const void *stackStart_;
-  const void *textStart_;
-  const void *textEnd_;
-  const size_t textSize_;
+  const void *stack_start_;
+  const void *text_start_;
+  const void *text_end_;
+  const size_t text_size_;
   const pid_t pid_;
   const size_t max_heap_obj_;
-  [[nodiscard]] bool AddrIsInText(const void *addr) const;
-  [[nodiscard]] bool AddrIsOnHeap(
-		  const void *addr, const void *heapStart, const void *heapEnd) const;
+  [[nodiscard]] bool AddressIsInText(const void *address) const;
+  [[nodiscard]] bool AddressIsOnHeap(
+		  const void *address, const void *heap_start, const void *heap_end) const;
 };
 #endif	// MEMGREP_STACK_SEARCHER
