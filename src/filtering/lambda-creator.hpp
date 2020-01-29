@@ -1,3 +1,5 @@
+#ifndef MEMGREP_LAMBDA_CREATOR
+#define MEMGREP_LAMBDA_CREATOR
 #include "../misc/remote-memory.hpp"
 #include "../misc/structs.hpp"
 
@@ -13,3 +15,4 @@ class LambdaCreator {
 	  static std::function<bool(const RemoteHeapPointer&)> GetFilterLambda(
 			  const pid_t pid, const Query& query);
 };
+#endif // MEMGREP_LAMBDA_CREATOR
