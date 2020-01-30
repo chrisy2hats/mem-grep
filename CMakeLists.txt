@@ -12,14 +12,14 @@ endif()
 option(BUILD_AS_CLI "Build as a CLI application" ON)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Werror -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -march=native")
 set(EXECUTABLE_OUTPUT_PATH "out")
 
 add_executable(mem-grep
         src/CLI/main.cpp
 		src/CLI/argument-parsing/argument-parsing.cpp src/CLI/argument-parsing/argument-parsing.hpp
-        
+
 		src/shared/misc/map-parser.cpp src/shared/misc/map-parser.hpp
 		src/shared/heap-traversing/bss-searcher.cpp src/shared/heap-traversing/bss-searcher.hpp
 		src/shared/misc/malloc-metadata.cpp src/shared/misc/malloc-metadata.hpp

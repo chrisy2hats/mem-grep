@@ -153,7 +153,7 @@ bool MapParser::IsBssEntry(const MapsEntry &entry) const {
   return IsReadable(entry) && IsWriteable(entry) && entry.file_path == executable_path_;
 }
 
-bool MapParser::IsDataEntry(const MapsEntry &entry) const {
+bool MapParser::IsDataEntry(const MapsEntry& ) const {
   // TODO need to work out the characteristics of .data sections
   return false;
 }

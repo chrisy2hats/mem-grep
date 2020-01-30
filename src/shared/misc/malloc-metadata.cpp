@@ -26,7 +26,7 @@ using std::cout;
   // glibc can do this as all allocations are a multiple of 8 so the 3 least
   // significant bits are unused So a 32 bit allocation would be 39 if all flags
   // are set We floor the size to the nearest 8 to get the actual size of the block
-  const auto flags = size % 8;
+  [[maybe_unused]]const auto flags = size % 8;
 
   // Drop the 3 least significant bits. They are flags not the allocated size
   size = (size / 8) * 8;

@@ -115,19 +115,20 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
 
       if (pointed_to_size==0 || pointed_to_size > max_heap_obj_) continue;
 
-      current_level_pointers.push_back({.actual_address = actual_address,
-		      .points_to = address_pointed_to,
-		      .size_pointed_to = pointed_to_size,
-		      .total_sub_pointers = 0,
-		      .contains_pointers_to = {}});
+      current_level_pointers.push_back({actual_address,
+		      address_pointed_to,
+		      pointed_to_size,
+		      0,
+		      {}}
+		      );
     }
   }
 
   for (auto& j : current_level_pointers) {
     const struct RemoteHeapPointer p = FollowPointer(j);
-    if (p.size_pointed_to==0 || p.size_pointed_to > max_heap_obj_)continue;
+//    if (p.size_pointed_to==0 || p.size_pointed_to > max_heap_obj_)continue;
     base.total_sub_pointers += p.total_sub_pointers;
-    base.contains_pointers_to.push_back(p);
+    base.contains_pointers_to.emplace_back(p);
   }
 
   base.total_sub_pointers += current_level_pointers.size();

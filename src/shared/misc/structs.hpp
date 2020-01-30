@@ -30,7 +30,6 @@ struct RemoteHeapPointer {
 
   // This contains pointers to other parts of the heap that are stored in heap memory pointed to
   // This is different to total_sub_pointers as it does NOT include pointers found by traversing pointers in the initial block pointed to
-//  std::vector<RemoteHeapPointer> contains_pointers_to = std::vector<RemoteHeapPointer>(16);
   std::vector<RemoteHeapPointer> contains_pointers_to;
 };
 
