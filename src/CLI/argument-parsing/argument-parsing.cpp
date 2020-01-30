@@ -79,6 +79,9 @@ struct CLIArgs ArgumentParser::parseArguments(int argc, char **argv) {
     }
     if (strncmp(argv[i], "--MaxHeapObjSize", 17) == 0) {
       args.max_heap_obj_size = std::stoul(argv[i + 1]);
+      i++;
+      cout << "Max heap size parsed as " << args.max_heap_obj_size  << "\n";
+      continue;
     }
     cerr << "Unknown parameter provided: \"" << argv[i] << "\" Exiting...\n";
     exit(1);
