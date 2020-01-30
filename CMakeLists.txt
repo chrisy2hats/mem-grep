@@ -9,6 +9,11 @@ if (BUILD_UNIT_TESTS)
 	add_subdirectory(tests)
 endif()
 
+option(BUILD_AS_CLI "Build as a CLI application" ON)
+if (BUILD_AS_CLI)
+	add_compile_definitions(CLI)
+endif()
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -march=native")

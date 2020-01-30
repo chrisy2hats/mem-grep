@@ -3,6 +3,7 @@
 using std::cout;
 using std::cerr;
 
+#ifdef CLI
 //CLI Main If run via GUI AnalyseProgram is called directly
 int main(int argc, char** argv){
   const CLIArgs userArgs = ArgumentParser::parseArguments(argc, argv);
@@ -32,6 +33,7 @@ int main(int argc, char** argv){
     return error_number;
   }
 }
+#endif
 
 AnalysisResultOrErr AnalyseProgram(const Query& query) {
 
@@ -85,7 +87,7 @@ AnalysisResultOrErr AnalyseProgram(const Query& query) {
   }
 
   std::vector<RemoteHeapPointer> AllMatches = BssMatches;
-  BssMatches.insert(BssMatches.cend(), StackMatches.cbegin(), StackMatches.cend());
+  AllMatches.insert(AllMatches.cend(), StackMatches.cbegin(), StackMatches.cend());
   assert(AllMatches.size() == BssMatches.size() + StackMatches.size());
 
   return AllMatches;
