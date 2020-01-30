@@ -10,17 +10,16 @@ using std::cout;
     return 0;
   }
   // The size is stored in the 8 bytes preceding the start of the object
-  const size_t *size_location = (size_t *)((char *)heap_address - sizeof(void *));
+  const size_t* size_location = static_cast<size_t*>(SubFromVoid(heap_address,sizeof(void*)));
   size_t size = 0;
-  if (!is_local_address) {
-    // Gives us a 1 byte heap array containing the 1 byte before heap_address
-    char *size_ptr = RemoteMemory::Copy(pid, size_location, sizeof(void *));
-    size = *(reinterpret_cast<size_t *>(size_ptr));
-    memcpy(&size, size_ptr, sizeof(void *));
-    delete[] size_ptr;
-  } else {
+  if (is_local_address) {
     // We are getting the size of an object in a deep copy we already have.
     size = *size_location;
+  } else {
+    // Gives us a 1 byte heap array containing the 1 byte before heap_address
+    char *size_ptr = RemoteMemory::Copy(pid, size_location, sizeof(void *));
+    memcpy(&size, size_ptr, sizeof(void *));
+    delete[] size_ptr;
   }
 
   // The 3 least significant bits of the size are flags not the actual size

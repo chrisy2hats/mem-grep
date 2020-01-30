@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
-#include "../src/heap-traversing/heap-traverser.hpp"
-#include "../src/heap-traversing/bss-searcher.hpp"
+#include "../src/shared/heap-traversing/heap-traverser.hpp"
+#include "../src/shared/heap-traversing/bss-searcher.hpp"
 #include "null-structs.hpp"
 #include "utils.hpp"
 

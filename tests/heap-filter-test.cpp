@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
-#include "../src/filtering/heap-filter.hpp"
-#include "../src/misc/map-parser.hpp"
-#include "../src/heap-traversing/bss-searcher.hpp"
+#include "../src/shared/filtering/heap-filter.hpp"
+#include "../src/shared/misc/map-parser.hpp"
+#include "../src/shared/heap-traversing/bss-searcher.hpp"
 #include "utils.hpp"
 
 TEST_CASE("Exclude none"){

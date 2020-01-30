@@ -17,20 +17,21 @@ set(CMAKE_CXX_FLAGS_RELEASE "-O2 -march=native")
 set(EXECUTABLE_OUTPUT_PATH "out")
 
 add_executable(mem-grep
-        src/main.cpp src/main.hpp
-        src/misc/map-parser.cpp src/misc/map-parser.hpp
-        src/heap-traversing/bss-searcher.cpp src/heap-traversing/bss-searcher.hpp
-        src/misc/malloc-metadata.cpp src/misc/malloc-metadata.hpp
-        src/misc/prerun-checks.cpp src/misc/prerun-checks.hpp
-        src/heap-traversing/stack-searcher.cpp src/heap-traversing/stack-searcher.hpp
-        src/heap-traversing/heap-traverser.cpp src/heap-traversing/heap-traverser.hpp
-        src/argument-parsing/argument-parsing.cpp src/argument-parsing/argument-parsing.hpp
-		src/misc/structs.cpp src/misc/structs.hpp
-        src/misc/remote-memory.cpp src/misc/remote-memory.hpp
-        src/filtering/heap-filter.cpp src/filtering/heap-filter.hpp
-		src/filtering/lambda-creator.cpp src/filtering/lambda-creator.hpp
-		src/misc/utils.hpp src/misc/utils.cpp
-		)
+        src/CLI/main.cpp
+		src/CLI/argument-parsing/argument-parsing.cpp src/CLI/argument-parsing/argument-parsing.hpp
+        
+		src/shared/misc/map-parser.cpp src/shared/misc/map-parser.hpp
+		src/shared/heap-traversing/bss-searcher.cpp src/shared/heap-traversing/bss-searcher.hpp
+		src/shared/misc/malloc-metadata.cpp src/shared/misc/malloc-metadata.hpp
+		src/shared/misc/prerun-checks.cpp src/shared/misc/prerun-checks.hpp
+		src/shared/heap-traversing/stack-searcher.cpp src/shared/heap-traversing/stack-searcher.hpp
+		src/shared/heap-traversing/heap-traverser.cpp src/shared/heap-traversing/heap-traverser.hpp
+		src/shared/misc/structs.cpp src/shared/misc/structs.hpp
+		src/shared/misc/remote-memory.cpp src/shared/misc/remote-memory.hpp
+		src/shared/filtering/heap-filter.cpp src/shared/filtering/heap-filter.hpp
+		src/shared/filtering/lambda-creator.cpp src/shared/filtering/lambda-creator.hpp
+		src/shared/misc/utils.hpp src/shared/misc/utils.cpp
+		src/shared/analyse-program.cpp src/shared/analyse-program.hpp src/CLI/main.hpp)
 target_link_libraries(mem-grep Threads::Threads)
 if (BUILD_AS_CLI)
 	target_compile_definitions(mem-grep PRIVATE CLI)

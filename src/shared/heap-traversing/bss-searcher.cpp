@@ -48,8 +48,7 @@ BssSearcher::BssSearcher(
 		      .points_to = kAddressPointedTo,
 		      .size_pointed_to = kSizePointedTo,
 		      .total_sub_pointers = 0,
-		      .contains_pointers_to = {}
-      };
+		      .contains_pointers_to = {}};
       matches.push_back(matching_pointer);
     }
   }

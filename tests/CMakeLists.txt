@@ -4,7 +4,7 @@ project(unit-tests)
 FIND_PACKAGE (Threads REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS "-g -Wall -Wextra -fpermissive -g")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough")
 set(EXECUTABLE_OUTPUT_PATH "out")
 
 
@@ -27,13 +27,13 @@ add_executable(unit-tests
         utils.cpp
         utils.hpp
 
-        ../src/misc/map-parser.cpp ../src/misc/map-parser.hpp
-        ../src/misc/remote-memory.cpp ../src/misc/remote-memory.hpp
-        ../src/misc/prerun-checks.cpp ../src/misc/prerun-checks.hpp
-        ../src/heap-traversing/bss-searcher.cpp ../src/heap-traversing/bss-searcher.hpp
-        ../src/misc/malloc-metadata.cpp ../src/misc/malloc-metadata.hpp
-        ../src/heap-traversing/heap-traverser.cpp ../src/heap-traversing/heap-traverser.hpp
-        ../src/filtering/heap-filter.cpp ../src/filtering/heap-filter.hpp
+        ../src/shared/misc/map-parser.cpp ../src/shared/misc/map-parser.hpp
+        ../src/shared/misc/remote-memory.cpp ../src/shared/misc/remote-memory.hpp
+        ../src/shared/misc/prerun-checks.cpp ../src/shared/misc/prerun-checks.hpp
+        ../src/shared/heap-traversing/bss-searcher.cpp ../src/shared/heap-traversing/bss-searcher.hpp
+        ../src/shared/misc/malloc-metadata.cpp ../src/shared/misc/malloc-metadata.hpp
+        ../src/shared/heap-traversing/heap-traverser.cpp ../src/shared/heap-traversing/heap-traverser.hpp
+        ../src/shared/filtering/heap-filter.cpp ../src/shared/filtering/heap-filter.hpp
         )
 
 target_link_libraries(unit-tests Threads::Threads)

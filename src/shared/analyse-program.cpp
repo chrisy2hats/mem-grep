@@ -1,39 +1,7 @@
-#include "main.hpp"
+#include "analyse-program.hpp"
 
 using std::cout;
 using std::cerr;
-
-#ifdef CLI
-//CLI Main If run via GUI AnalyseProgram is called directly
-int main(int argc, char** argv){
-  const CLIArgs userArgs = ArgumentParser::parseArguments(argc, argv);
-  const Query query = {
-	userArgs.pid,
-	userArgs.search_bss,
-	userArgs.search_stack,
-	userArgs.traverse_bss_pointers,
-	userArgs.traverse_stack_pointers,
-	userArgs.stack_frames_to_search,
-	userArgs.max_heap_obj_size,
-
-	//CLI parsing for these arguments is still TODO
-	0,
-	0,
-	{},
-	{}
-  };
-  const AnalysisResultOrErr analysis_result = AnalyseProgram(query);
-
-  if (analysis_result.index() == 0) {
-    cout << "mem-grep finished without an error.\n";
-    return 0;
-  } else {
-    const auto error_number = std::get<ANALYSE_PROGRAM_ERROR>(analysis_result);
-    cerr << "Analyse program returned an error " << error_number << "\n";
-    return error_number;
-  }
-}
-#endif
 
 AnalysisResultOrErr AnalyseProgram(const Query& query) {
 
@@ -61,10 +29,10 @@ AnalysisResultOrErr AnalyseProgram(const Query& query) {
     if (query.traverse_bss_pointers) {
       auto traverser = HeapTraverser(query.pid, heapMetadata, query.max_heap_obj_size);
       const std::vector<RemoteHeapPointer> traversed =
-		      traverser.TraversePointers(heapPointersInBss);
+              traverser.TraversePointers(heapPointersInBss);
       cout << "From " << heapPointersInBss.size() << " a further "
-	   << HeapTraverser::CountPointers(traversed) - heapPointersInBss.size()
-	   << " heap pointers where found by traversing\n";
+       << HeapTraverser::CountPointers(traversed) - heapPointersInBss.size()
+       << " heap pointers where found by traversing\n";
       BssMatches = HeapFilter::FlattenAndFilter(traversed, kFilterLambda);
     }
   }
@@ -90,5 +58,6 @@ AnalysisResultOrErr AnalyseProgram(const Query& query) {
   AllMatches.insert(AllMatches.cend(), StackMatches.cbegin(), StackMatches.cend());
   assert(AllMatches.size() == BssMatches.size() + StackMatches.size());
 
+  cout << "After filtering " << AllMatches.size() << " matches where found\n";
   return AllMatches;
 }

@@ -2,8 +2,8 @@
 #include <cstring>
 #include <csignal>
 #include <unistd.h>
-#include "../src/misc/remote-memory.hpp"
-#include "../src/misc/map-parser.hpp"
+#include "../src/shared/misc/remote-memory.hpp"
+#include "../src/shared/misc/map-parser.hpp"
 #include "null-structs.hpp"
 #include "utils.hpp"
 

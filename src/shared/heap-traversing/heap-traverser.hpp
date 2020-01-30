@@ -4,6 +4,7 @@
 #include "../misc/remote-memory.hpp"
 #include "../misc/malloc-metadata.hpp"
 #include "../misc/structs.hpp"
+#include "../misc/utils.hpp"
 
 #include <iostream>
 #include <vector>

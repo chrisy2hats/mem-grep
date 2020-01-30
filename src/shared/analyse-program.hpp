@@ -1,15 +1,13 @@
-#ifndef MEM_GREP_SRC_MAIN_HPP
-#define MEM_GREP_SRC_MAIN_HPP
+#ifndef MEM_GREP_SRC_ANALYSE_PROGRAM_HPP_
+#define MEM_GREP_SRC_ANALYSE_PROGRAM_HPP_
 
 #include "misc/map-parser.hpp"
 #include "heap-traversing/bss-searcher.hpp"
 #include "misc/prerun-checks.hpp"
 #include "heap-traversing/stack-searcher.hpp"
 #include "heap-traversing/heap-traverser.hpp"
-#include "argument-parsing/argument-parsing.hpp"
 #include "filtering/lambda-creator.hpp"
 #include "filtering/heap-filter.hpp"
-
 
 enum ANALYSE_PROGRAM_ERROR {
   FAILED_PRERUN_CHECKS
@@ -22,4 +20,4 @@ typedef std::variant<std::vector<RemoteHeapPointer>, ANALYSE_PROGRAM_ERROR> Anal
 //This allows for minimal CLI specific backend code
 AnalysisResultOrErr AnalyseProgram(const Query& query);
 
-#endif	// MEM_GREP_SRC_MAIN_HPP
+#endif	// MEM_GREP_SRC_ANALYSE_PROGRAM_HPP_
