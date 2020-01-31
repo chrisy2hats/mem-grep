@@ -31,7 +31,7 @@ add_executable(mem-grep
 		src/shared/filtering/heap-filter.cpp src/shared/filtering/heap-filter.hpp
 		src/shared/filtering/lambda-creator.cpp src/shared/filtering/lambda-creator.hpp
 		src/shared/misc/utils.hpp src/shared/misc/utils.cpp
-		src/shared/analyse-program.cpp src/shared/analyse-program.hpp src/CLI/main.hpp)
+		src/shared/analyse-program.cpp src/shared/analyse-program.hpp)
 target_link_libraries(mem-grep Threads::Threads)
 if (BUILD_AS_CLI)
 	target_compile_definitions(mem-grep PRIVATE CLI)
