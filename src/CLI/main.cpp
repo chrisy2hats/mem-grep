@@ -1,4 +1,5 @@
-#include "main.hpp"
+#include "../shared/analyse-program.hpp"
+#include "argument-parsing/argument-parsing.hpp"
 
 using std::cout;
 using std::cerr;
