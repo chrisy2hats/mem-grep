@@ -48,33 +48,43 @@ char* RemoteMemory::Copy(const pid_t& pid, const void* start, const size_t& size
   return mem_area;
 }
 
-template <typename T>
-ssize_t FindFirst(const char* start, const size_t size, T to_find) {
-  const size_t sizeof_current = std::visit(ValidTypesVisitor{},to_find);
-  T current;
-  for (size_t i = 0; i < size; i += sizeof_current){
-    current = start[i];
-    if (current == to_find) {
-      return i;
-    }
-  }
-  return -1;
-}
-
 bool RemoteMemory::Contains(const pid_t pid, const RemoteHeapPointer& ptr,
 		const std::vector<ValidTypes>& contains) {
+  // TODO find a way to not hard code this for the number of elements in ValidTypes
+  // The best alternative found is to fail to compile if the number of ValidTypes changes
+  // but will compile if the elements in ValidTypes are changed or reordered
+  static_assert(std::variant_size_v<ValidTypes> == 4,
+		  "The number of elements in ValidTypes has changed."
+		  "You need to update RemoteMemory::Contains");
 
   char* ptr_copy = RemoteMemory::Copy(pid, ptr.points_to, ptr.size_pointed_to);
-
   for (const auto& i : contains) {
-    const auto offset = FindFirst(ptr_copy, ptr.size_pointed_to, i);
+    ssize_t offset = 0;
+    switch (i.index()) {
+    case 0:
+      offset = FindFirst<std::variant_alternative_t<0, ValidTypes>>(
+		      ptr_copy, ptr.size_pointed_to, i);
+      break;
+    case 1:
+      offset = FindFirst<std::variant_alternative_t<1, ValidTypes>>(
+		      ptr_copy, ptr.size_pointed_to, i);
+      break;
+    case 2:
+      offset = FindFirst<std::variant_alternative_t<2, ValidTypes>>(
+		      ptr_copy, ptr.size_pointed_to, i);
+      break;
+    case 3:
+      offset = FindFirst<std::variant_alternative_t<3, ValidTypes>>(
+		      ptr_copy, ptr.size_pointed_to, i);
+      break;
+    }
 
-    //We failed to find a required element
-    if (offset == -1)
+    // We failed to find a required element
+    if (offset == kNotFoundOffset)
       return false;
 
-    // Set the currently found match to 0 so if the user asks to find 2 of the same value the same memory location
-    // won't match for both
+    // Set the currently found match to 0 so if the user asks to find 2 of the same value the same
+    // memory location won't match for both
     ptr_copy[offset] = 0;
   }
 

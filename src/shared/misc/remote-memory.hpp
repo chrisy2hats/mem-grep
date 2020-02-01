@@ -74,5 +74,19 @@ class RemoteMemory {
     delete[] mem_area;
     return results;
   }
+
+ private:
+  static constexpr ssize_t kNotFoundOffset = -1;
+  template <typename T>
+  static ssize_t FindFirst(const char* start, const size_t size, ValidTypes to_find) {
+    const size_t sizeof_current = std::visit(ValidTypesVisitor{}, to_find);
+
+    for (size_t i = 0; i < size; i += sizeof_current) {
+      if (std::get<T>(to_find) == *((T*)(start + i))) {
+	return i;
+      }
+    }
+    return kNotFoundOffset;
+  }
 };
 #endif	// MEMGREP_REMOTE_MEMORY
