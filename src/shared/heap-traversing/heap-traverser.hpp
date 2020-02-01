@@ -13,7 +13,7 @@
 #include <future>
 
 class HeapTraverser {
-  public:
+ public:
   std::vector<RemoteHeapPointer> TraversePointers(std::vector<RemoteHeapPointer> base_pointers);
   size_t static CountPointers(const std::vector<RemoteHeapPointer>& base_pointers);
   HeapTraverser(const pid_t pid, const MapsEntry& heap, const size_t max_heap_obj);
@@ -23,7 +23,12 @@ class HeapTraverser {
   void static PrintPointer(const RemoteHeapPointer& p, int indent_level = 0);
   void static PrintHeap(const std::vector<RemoteHeapPointer>& base_pointers);
 
-  private:
+  //Don't allow copying
+  //If copying is needed in the future be careful with the raw ptr to heap_copy_
+  HeapTraverser operator=(const HeapTraverser&) = delete;
+  HeapTraverser(const HeapTraverser&) = delete;
+
+ private:
   RemoteHeapPointer FollowPointer(RemoteHeapPointer& base);
   void WorkerThread(std::vector<RemoteHeapPointer>& base_pointers,
 		  std::atomic<uint64_t>& shared_index);

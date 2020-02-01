@@ -61,9 +61,9 @@ class MapParser {
   struct MapsEntry heap_ = kEmptyMapsEntry;
   struct MapsEntry bss_ = kEmptyMapsEntry;
   struct MapsEntry data_ = kEmptyMapsEntry;
-  std::vector<struct MapsEntry> text_sections_;
-  std::vector<struct MapsEntry> mmap_sections_;
-  std::string executable_path_;
+  std::vector<struct MapsEntry> text_sections_={};
+  std::vector<struct MapsEntry> mmap_sections_={};
+  std::string executable_path_="";
 
   // Rudimentary functions that simply check for a certain character in the MapsEntry.permissions
   // string
