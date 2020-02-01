@@ -37,7 +37,7 @@ struct CLIArgs ArgumentParser::parseArguments(int argc, char **argv) {
 
   // Allows to differentiate between users that don't specify --stack_frames_to_search and
   // users that do specify it but want to search the entire stack
-  bool SearchEntireStack = false;
+  bool search_entire_stack = false;
 
   for (auto i = 1; i < argc; i++) {
     if (strncmp(argv[i], "--pid", 6) == 0) {
@@ -71,7 +71,7 @@ struct CLIArgs ArgumentParser::parseArguments(int argc, char **argv) {
     if (strncmp(argv[i], "--stack_frames_to_search", 22) == 0) {
       size_t frames = std::stoul(argv[i + 1]);
       if (frames == 0) {
-	SearchEntireStack = true;
+	search_entire_stack = true;
       }
       args.stack_frames_to_search = frames;
       i++;  // Assume the number of frames to search in the next argument so don't look at it
@@ -87,12 +87,17 @@ struct CLIArgs ArgumentParser::parseArguments(int argc, char **argv) {
     exit(1);
   }
 
+  if (search_entire_stack) {
+    args.stack_frames_to_search = std::numeric_limits<size_t>::max();
+  }
+
+  // Post parsing validation
+
   if (args.max_heap_obj_size == 0) {
     args.max_heap_obj_size = DEFAULT_MAX_HEAP_OBJ_SIZE_;
     cout << "No max heap object size provided. Defaulting to " << args.max_heap_obj_size << '\n';
   }
 
-  // Post parsing validation
   if (args.pid == 0) {
     cerr << "No PID defined via --pid or --pidof\n";
     exit(1);
