@@ -14,7 +14,7 @@ Map BuildParams = [
         Branch              : "master",
         WorkDir             : "/tmp/mem-grep_${env.BUILD_NUMBER}",
         ProjectName         : "mem-grep",
-        TargetPrograms      : ["multiLayeredBssHeapPointers", "onheapint", "onstackint", "runUntilManipulatedHeap", "runUntilManipulatedStack", "asmTarget", "bssHeapPointers"]
+        TargetPrograms      : ["multiLayeredBssHeapPointers", "onheapint", "onstackint", "runUntilManipulatedHeap", "oneTwoSevenOnStack", "asmTarget", "bssHeapPointers"]
         ] as HashMap
                
 label "master"
@@ -63,6 +63,14 @@ pipeline {
         stage("Build - mem-grep"){
             steps{
                 sh "make -j \$(nproc) mem-grep"
+            }
+        }
+        stage("Build - GUI"){
+            steps{
+                dir("src/GUI"){
+                    sh "qmake CONFIG+=debug mem-grep.pro"
+                    sh "make -j \$(nproc)"
+                }
             }
         }
         stage("Build - Target Programs"){

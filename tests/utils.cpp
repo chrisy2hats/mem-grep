@@ -3,7 +3,7 @@
 void ForeachTargetProgram(const std::function<void(const pid_t,const std::string&)>& functor ){
   const std::vector<std::string> target_programs = {
 		  "asmTarget", "onheapint", "runUntilManipulatedHeap","bssHeapPointers",
-		  "multiLayeredBssHeapPointers","onstackint","runUntilManipulatedStack"
+		  "multiLayeredBssHeapPointers","onstackint","oneTwoSevenOnStack"
   };
 
   for (const std::string& program : target_programs){

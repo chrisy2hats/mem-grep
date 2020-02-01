@@ -50,8 +50,8 @@ add_executable(bssHeapPointers
         target-programs/bssHeapPointers.c
         )
 
-add_executable(runUntilManipulatedStack
-        target-programs/runUntilManipulatedStack.c
+add_executable(oneTwoSevenOnStack
+	target-programs/oneTwoSevenOnStack.c
         )
 
 add_executable(multiLayeredBssHeapPointers

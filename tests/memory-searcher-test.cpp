@@ -95,7 +95,7 @@ TEST_CASE("Find Value on heap") {
 }
 
 TEST_CASE("Find Value on stack") {
-  pid_t pid = LaunchProgram("runUntilManipulatedStack");
+  pid_t pid = LaunchProgram("oneTwoSevenOnStack");
 
   std::cout << "Analysing PID:" << pid << std::endl;
   auto parser = MapParser(pid);
