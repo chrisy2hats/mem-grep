@@ -44,11 +44,12 @@ BssSearcher::BssSearcher(
 
       if (kSizePointedTo == 0 || kSizePointedTo > max_heap_obj_)
 	continue;
-      const struct RemoteHeapPointer matching_pointer = {.actual_address = actual_address,
-		      .points_to = kAddressPointedTo,
-		      .size_pointed_to = kSizePointedTo,
-		      .total_sub_pointers = 0,
-		      .contains_pointers_to = {}};
+      const struct RemoteHeapPointer matching_pointer = {
+          actual_address,
+		      kAddressPointedTo,
+		      kSizePointedTo,
+		      0,
+		      {}};
       matches.push_back(matching_pointer);
     }
   }
