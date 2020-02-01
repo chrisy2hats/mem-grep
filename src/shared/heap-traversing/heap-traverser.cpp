@@ -56,6 +56,7 @@ void HeapTraverser::WorkerThread(std::vector<RemoteHeapPointer>& base_pointers,
 std::vector<RemoteHeapPointer> HeapTraverser::TraversePointers(
 		std::vector<RemoteHeapPointer> base_pointers) {
   if (heap_copy_ == nullptr) {
+    //Cleaned up in object this->destructor
     heap_copy_ = RemoteMemory::Copy(pid_, heap_metadata_.start, heap_metadata_.size);
   }
   if (base_pointers.empty()) {
@@ -93,8 +94,8 @@ std::vector<RemoteHeapPointer> HeapTraverser::TraversePointers(
 RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
   const char* block_start = (char*)RemoteToLocal(base.points_to);
   void* current_8_bytes;
-  std::vector<RemoteHeapPointer> current_level_pointers = {};
-  current_level_pointers.reserve(16);
+
+  base.contains_pointers_to.reserve(16);
   for (size_t i = 0; i < base.size_pointed_to; i += sizeof(void*)) {
     memcpy(&current_8_bytes, block_start + i, sizeof(void*));
 
@@ -109,29 +110,26 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
 		      GetMallocMetadata(local_address_pointed_to, pid_, max_heap_obj_, false, true);
 
       if (IsAlreadyVisited(local_address_pointed_to))
-    	continue;
+	continue;
       else
-	    SetAlreadyVisited(local_address_pointed_to);
+	SetAlreadyVisited(local_address_pointed_to);
 
-      if (pointed_to_size==0 || pointed_to_size > max_heap_obj_) continue;
+      if (pointed_to_size == 0 || pointed_to_size > max_heap_obj_) continue;
 
-      current_level_pointers.push_back({actual_address,
+      RemoteHeapPointer child_pointer = {actual_address,
 		      address_pointed_to,
 		      pointed_to_size,
 		      0,
-		      {}}
-		      );
+		      {}
+      };
+
+      child_pointer = FollowPointer(child_pointer);
+      base.contains_pointers_to.push_back(child_pointer);
+      base.total_sub_pointers += child_pointer.total_sub_pointers;
     }
   }
 
-  for (auto& j : current_level_pointers) {
-    const struct RemoteHeapPointer p = FollowPointer(j);
-//    if (p.size_pointed_to==0 || p.size_pointed_to > max_heap_obj_)continue;
-    base.total_sub_pointers += p.total_sub_pointers;
-    base.contains_pointers_to.emplace_back(p);
-  }
-
-  base.total_sub_pointers += current_level_pointers.size();
+  base.total_sub_pointers += base.contains_pointers_to.size();
   return base;
 }
 
@@ -140,8 +138,9 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
   return is_on_heap;
 }
 
+//Set the 2nd most significant bit 8 bytes before address
 void HeapTraverser::SetAlreadyVisited(const void* address) {
-  size_t* size_location = static_cast<size_t*>(SubFromVoid(address,8));
+  size_t* size_location = static_cast<size_t*>(SubFromVoid(address,sizeof(void*)));
   assert((char*)size_location == ((char*)address - sizeof(void*)));
   const size_t new_val = *size_location += kAlreadyVisitedFlag;
   *size_location = new_val;
@@ -154,9 +153,7 @@ bool HeapTraverser::IsAlreadyVisited(const void* address) const {
 }
 
 [[nodiscard]] inline void* HeapTraverser::LocalToRemote(const void* local_address) const {
-//  const size_t offset = (char*)local_address - heap_copy_;
   const auto offset = (size_t)SubFromVoid(local_address,heap_copy_);
-//  void* remote_address = (char*)heap_metadata_.start + offset;
   void* remote_address = AddToVoid(heap_metadata_.start,offset);
   return remote_address;
 }
