@@ -57,7 +57,7 @@ pipeline {
         }
         stage("CMake"){
             steps{
-                sh "cmake . -DBUILD_UNIT_TESTS=ON"
+                sh "cmake . -DBUILD_UNIT_TESTS=ON -DCMAKE_BUILD_TYPE=Debug"
             }
         }
         stage("Build - mem-grep"){
