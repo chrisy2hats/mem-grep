@@ -41,11 +41,11 @@ TEST_CASE("Don't match one address twice") {
   char *mem_area = new char[kilobyte];
   bzero(mem_area, kilobyte);
   RemoteHeapPointer ptr = {
-		  .actual_address = &mem_area,
-		  .points_to = mem_area,
-		  .size_pointed_to = kilobyte,
-		  .total_sub_pointers=0,
-		  .contains_pointers_to={}
+		  &mem_area,
+		  mem_area,
+		  kilobyte,
+		  0,
+		  {}
   };
 
   // Searching for 2 100's when only one 100 is in the area shouldn't match
@@ -61,11 +61,11 @@ TEST_CASE("Do match 2 different address"){
   bzero(mem_area, kilobyte);
 
   RemoteHeapPointer ptr = {
-		  .actual_address = &mem_area,
-		  .points_to = mem_area,
-		  .size_pointed_to = kilobyte,
-		  .total_sub_pointers=0,
-		  .contains_pointers_to={}
+		  &mem_area,
+		  mem_area,
+		  kilobyte,
+		  0,
+		  {}
   };
   const int hundred = 100;
   const std::vector<ValidTypes> must_contain = {hundred, hundred};

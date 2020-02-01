@@ -4,7 +4,7 @@ project(unit-tests)
 FIND_PACKAGE (Threads REQUIRED)
 
 set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough")
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Werror -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough")
 set(EXECUTABLE_OUTPUT_PATH "out")
 
 
