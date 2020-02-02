@@ -27,8 +27,6 @@ class RemoteMemory {
   static char* Copy(const pid_t& pid, const void* start, const size_t& size);
   template <typename T>
   static ssize_t Write(pid_t pid, void* start, T new_value);
-  template <typename T>
-  static std::vector<SearchMatch> Search(pid_t pid, void* start, const size_t size, T to_find);
 
   static bool Contains(
   		const pid_t pid, const RemoteHeapPointer& ptr, const std::vector<ValidTypes>& contains);

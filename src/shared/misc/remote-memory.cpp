@@ -78,32 +78,6 @@ ssize_t RemoteMemory::Write(pid_t pid, void* start, T new_value) {
   return nwrite;
 }
 
-template <typename T>
-std::vector<SearchMatch> RemoteMemory::Search(pid_t pid, void* start, const size_t size, T to_find) {
-  const char* mem_area = RemoteMemory::Copy(pid, start, size);
-  if (mem_area == nullptr) {
-    std::cerr << "RemoteMemory::Copy returned nullptr\n";
-    delete[] mem_area;
-    return {};
-  }
-
-  auto results = std::vector<struct SearchMatch>();
-  size_t offset = 0;
-  for (size_t i = 0; i < size; i += sizeof(T)) {
-    T current = mem_area[i];
-    memcpy(&current, mem_area + i, sizeof(T));
-
-    if (current == to_find) {
-      offset = i;
-      void* absolute_address = (char*)start + offset;
-      SearchMatch match = {offset, absolute_address};
-      results.push_back(match);
-    }
-  }
-  delete[] mem_area;
-  return results;
-}
-
 bool RemoteMemory::Contains(const pid_t pid, const RemoteHeapPointer& ptr,
 			    const std::vector<ValidTypes>& contains) {
 
