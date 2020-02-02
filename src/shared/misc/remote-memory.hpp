@@ -14,7 +14,7 @@ struct SearchMatch {
 };
 
 class RemoteMemory {
-  public:
+ public:
   // It is on the calling function to sanitise the inputs to Copy
   // If asked to copy a section of 1024GB this function will try and do this
   // Error checking in this function is nigh impossible as it is used in a wide
@@ -25,68 +25,22 @@ class RemoteMemory {
   // the returned pointer when it is done with the memory assuming nullptr isn't
   // returned
   static char* Copy(const pid_t& pid, const void* start, const size_t& size);
-  static bool Contains(const pid_t pid, const RemoteHeapPointer& ptr,
-		  const std::vector<ValidTypes>& contains);
-
-  // Implementation of templated function must be with definition
   template <typename T>
-  static ssize_t Write(pid_t pid, void* start, size_t, T new_value) {
-    struct iovec local[1];
-    struct iovec remote[1];
-    local[0].iov_base = &new_value;
-    local[0].iov_len = sizeof(T);
-    remote[0].iov_base = start;
-    remote[0].iov_len = sizeof(T);
-
-    std::cout << "Trying to write " << remote[0].iov_len
-	      << " bytes to address: " << local[0].iov_base << '\n';
-    ssize_t nwrite = process_vm_writev(pid, local, 1, remote, 1, 0);
-    if (nwrite != (ssize_t)local[0].iov_len) {
-      std::cout << "writev failed: " << errno << "\n";
-      std::cout << "Error string:" << strerror(errno) << "\n";
-      abort();
-    }
-    std::cout << "nwrite successful\n";
-    return nwrite;
-  }
+  static ssize_t Write(pid_t pid, void* start, T new_value);
   template <typename T>
-  static std::vector<SearchMatch> Search(pid_t pid, void* start, const size_t size, T to_find) {
-    const char* mem_area = RemoteMemory::Copy(pid, start, size);
-    if (mem_area == nullptr) {
-      std::cerr << "RemoteMemory::Copy returned nullptr\n";
-      delete[] mem_area;
-      return {};
-    }
+  static std::vector<SearchMatch> Search(pid_t pid, void* start, const size_t size, T to_find);
 
-    auto results = std::vector<struct SearchMatch>();
-    size_t offset = 0;
-    for (size_t i = 0; i < size; i += sizeof(T)) {
-      T current = mem_area[i];
-      memcpy(&current, mem_area + i, sizeof(T));
-
-      if (current == to_find) {
-	offset = i;
-	void* absolute_address = (char*)start + offset;
-	SearchMatch match = {offset, absolute_address};
-	results.push_back(match);
-      }
-    }
-    delete[] mem_area;
-    return results;
-  }
+  static bool Contains(
+  		const pid_t pid, const RemoteHeapPointer& ptr, const std::vector<ValidTypes>& contains);
+  static ssize_t Substitute(
+		  const pid_t pid, const RemoteHeapPointer& ptr, const Substitutions& subsitutions);
 
  private:
   static constexpr ssize_t kNotFoundOffset = -1;
-  template <typename T>
-  static ssize_t FindFirst(const char* start, const size_t size, ValidTypes to_find) {
-    const size_t sizeof_current = std::visit(ValidTypesVisitor{}, to_find);
 
-    for (size_t i = 0; i < size; i += sizeof_current) {
-      if (std::get<T>(to_find) == *((T*)(start + i))) {
-	return i;
-      }
-    }
-    return kNotFoundOffset;
-  }
+  template <typename T>
+  static ssize_t FindFirst(const char* start, const size_t size, ValidTypes to_find) ;
+  static ssize_t FindFirstJumpTable(
+		  const RemoteHeapPointer& ptr, const char* const ptr_copy, ValidTypes to_find);
 };
 #endif	// MEMGREP_REMOTE_MEMORY

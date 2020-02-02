@@ -48,36 +48,68 @@ char* RemoteMemory::Copy(const pid_t& pid, const void* start, const size_t& size
   return mem_area;
 }
 
-bool RemoteMemory::Contains(const pid_t pid, const RemoteHeapPointer& ptr,
-		const std::vector<ValidTypes>& contains) {
-  // TODO find a way to not hard code this for the number of elements in ValidTypes
-  // The best alternative found is to fail to compile if the number of ValidTypes changes
-  // but will compile if the elements in ValidTypes are changed or reordered
-  static_assert(std::variant_size_v<ValidTypes> == 4,
-		  "The number of elements in ValidTypes has changed."
-		  "You need to update RemoteMemory::Contains");
+template <typename T>
+ssize_t RemoteMemory::Write(pid_t pid, void* start, T new_value) {
 
-  char* ptr_copy = RemoteMemory::Copy(pid, ptr.points_to, ptr.size_pointed_to);
-  for (const auto& i : contains) {
-    ssize_t offset = 0;
-    switch (i.index()) {
-    case 0:
-      offset = FindFirst<std::variant_alternative_t<0, ValidTypes>>(
-		      ptr_copy, ptr.size_pointed_to, i);
-      break;
-    case 1:
-      offset = FindFirst<std::variant_alternative_t<1, ValidTypes>>(
-		      ptr_copy, ptr.size_pointed_to, i);
-      break;
-    case 2:
-      offset = FindFirst<std::variant_alternative_t<2, ValidTypes>>(
-		      ptr_copy, ptr.size_pointed_to, i);
-      break;
-    case 3:
-      offset = FindFirst<std::variant_alternative_t<3, ValidTypes>>(
-		      ptr_copy, ptr.size_pointed_to, i);
-      break;
+  size_t size = 0;
+  if (typeid(T) == typeid(ValidTypes)){
+    size = std::visit(ValidTypesVisitor{}, new_value);
+  }else{
+    size = sizeof(T);
+  }
+  cout << "Writting " << size << " bytes in Write!\n";
+
+  struct iovec local[1];
+  struct iovec remote[1];
+  local[0].iov_base = &new_value;
+  local[0].iov_len = size;
+  remote[0].iov_base = start;
+  remote[0].iov_len = size;
+
+  std::cout << "Trying to write " << remote[0].iov_len
+	    << " bytes to address: " << local[0].iov_base << '\n';
+  ssize_t nwrite = process_vm_writev(pid, local, 1, remote, 1, 0);
+  if (nwrite != (ssize_t)local[0].iov_len) {
+    std::cout << "writev failed: " << errno << "\n";
+    std::cout << "Error string:" << strerror(errno) << "\n";
+    abort();
+  }
+  std::cout << "nwrite successful\n";
+  return nwrite;
+}
+
+template <typename T>
+std::vector<SearchMatch> RemoteMemory::Search(pid_t pid, void* start, const size_t size, T to_find) {
+  const char* mem_area = RemoteMemory::Copy(pid, start, size);
+  if (mem_area == nullptr) {
+    std::cerr << "RemoteMemory::Copy returned nullptr\n";
+    delete[] mem_area;
+    return {};
+  }
+
+  auto results = std::vector<struct SearchMatch>();
+  size_t offset = 0;
+  for (size_t i = 0; i < size; i += sizeof(T)) {
+    T current = mem_area[i];
+    memcpy(&current, mem_area + i, sizeof(T));
+
+    if (current == to_find) {
+      offset = i;
+      void* absolute_address = (char*)start + offset;
+      SearchMatch match = {offset, absolute_address};
+      results.push_back(match);
     }
+  }
+  delete[] mem_area;
+  return results;
+}
+
+bool RemoteMemory::Contains(const pid_t pid, const RemoteHeapPointer& ptr,
+			    const std::vector<ValidTypes>& contains) {
+
+  char* const ptr_copy = RemoteMemory::Copy(pid, ptr.points_to, ptr.size_pointed_to);
+  for (const auto& i : contains) {
+    ssize_t offset = FindFirstJumpTable(ptr,ptr_copy,i);
 
     // We failed to find a required element
     if (offset == kNotFoundOffset)
@@ -91,3 +123,65 @@ bool RemoteMemory::Contains(const pid_t pid, const RemoteHeapPointer& ptr,
   delete[] ptr_copy;
   return true;
 }
+
+ssize_t RemoteMemory::Substitute(const pid_t pid,const RemoteHeapPointer& ptr,const Substitutions& subsitutions){
+  const char* const ptr_copy = RemoteMemory::Copy(pid,ptr.points_to,ptr.size_pointed_to);
+
+  size_t total_bytes_written = 0;
+  for (const auto& substitution : subsitutions){
+    const ssize_t offset = FindFirstJumpTable(ptr,ptr_copy,substitution.from);
+    if (offset==kNotFoundOffset){
+      cerr << "Failed to find value when substituting\n";
+      continue;
+    }
+    const ssize_t bytes_written = RemoteMemory::Write(pid,AddToVoid(ptr.points_to,offset),substitution.to);
+    total_bytes_written+=bytes_written;
+  }
+
+  delete[] ptr_copy;
+  return total_bytes_written;
+}
+
+template <typename T>
+ssize_t RemoteMemory::FindFirst(const char* start, const size_t size, ValidTypes to_find) {
+  const size_t sizeof_current = std::visit(ValidTypesVisitor{}, to_find);
+
+  for (size_t i = 0; i < size; i += sizeof_current) {
+    if (std::get<T>(to_find) == *((T*)(start + i))) {
+      return i;
+    }
+  }
+  return kNotFoundOffset;
+}
+
+ssize_t RemoteMemory::FindFirstJumpTable(
+		const RemoteHeapPointer& ptr, const char* const ptr_copy, ValidTypes to_find) {
+  // TODO find a way to not hard code this for the number of elements in ValidTypes
+  // The best alternative found is to fail to compile if the number of ValidTypes changes
+  // but will compile if the elements in ValidTypes are changed or reordered
+  static_assert(std::variant_size_v<ValidTypes> == 4,
+		"The number of elements in ValidTypes has changed."
+		"You need to update RemoteMemory::FindFirstJumpTable");
+
+  ssize_t offset = 0;
+  switch (to_find.index()) {
+  case 0:
+    offset = FindFirst<std::variant_alternative_t<0, ValidTypes>>(
+		    ptr_copy, ptr.size_pointed_to, to_find);
+    break;
+  case 1:
+    offset = FindFirst<std::variant_alternative_t<1, ValidTypes>>(
+		    ptr_copy, ptr.size_pointed_to, to_find);
+    break;
+  case 2:
+    offset = FindFirst<std::variant_alternative_t<2, ValidTypes>>(
+		    ptr_copy, ptr.size_pointed_to, to_find);
+    break;
+  case 3:
+    offset = FindFirst<std::variant_alternative_t<3, ValidTypes>>(
+		    ptr_copy, ptr.size_pointed_to, to_find);
+    break;
+  }
+  return offset;
+}
+

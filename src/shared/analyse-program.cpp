@@ -57,7 +57,39 @@ AnalysisResultOrErr AnalyseProgram(const Query& query) {
   std::vector<RemoteHeapPointer> AllMatches = BssMatches;
   AllMatches.insert(AllMatches.cend(), StackMatches.cbegin(), StackMatches.cend());
   assert(AllMatches.size() == BssMatches.size() + StackMatches.size());
-
   cout << "After filtering " << AllMatches.size() << " matches where found\n";
+
+  // If all matches point to the same place
+  bool same_address = true;
+  void* first_points_to = nullptr;
+  for (const auto& i : AllMatches) {
+    if (first_points_to == nullptr) {
+      first_points_to = i.points_to;
+    }
+    if (i.points_to != first_points_to) {
+      same_address = false;
+      break;
+    }
+  }
+  if (same_address) {
+    cout << "All matches point to the same location\n";
+  }
+
+  if (!AllMatches.empty() && same_address) {
+    size_t expected_write = 0;
+    for (const auto& i : query.subsitutions) {
+      expected_write += std::visit(ValidTypesVisitor{}, i.from);
+    }
+    size_t bytes_written = RemoteMemory::Substitute(query.pid, AllMatches[0], query.subsitutions);
+    if (expected_write != bytes_written) {
+      cerr << "Write mismatch. Expected " << expected_write << " but only wrote " << bytes_written
+	   << "\n";
+    } else {
+      cout << "Substitutions written out successfully to ptr at " << AllMatches[0].actual_address
+	   << ":" << AllMatches[0].points_to << "\n";
+    }
+  } else {
+    return AMBIGUOUS_RESULT;
+  }
   return AllMatches;
 }

@@ -60,6 +60,7 @@ struct Substitution {
   const ValidTypes from;
   const ValidTypes to;
 };
+typedef std::vector<Substitution> Substitutions;
 
 // The user can provide criteria to filter output by either from CLI arguments or via the GUI
 // Both CLI and GUIs use this struct to represent the users query
@@ -75,6 +76,6 @@ struct Query{
   size_t min_size;
   size_t max_size;
   std::vector<ValidTypes> must_contain;
-  std::vector<Substitution> subsitutions;
+  Substitutions subsitutions;
 };
 #endif	// MEM_GREP_UTILS_HPP

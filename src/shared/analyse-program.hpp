@@ -10,7 +10,8 @@
 #include "filtering/heap-filter.hpp"
 
 enum ANALYSE_PROGRAM_ERROR {
-  FAILED_PRERUN_CHECKS
+  FAILED_PRERUN_CHECKS,
+  AMBIGUOUS_RESULT
 };
 
 typedef std::variant<std::vector<RemoteHeapPointer>, ANALYSE_PROGRAM_ERROR> AnalysisResultOrErr;
