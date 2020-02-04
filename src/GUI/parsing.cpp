@@ -30,9 +30,45 @@ std::vector<ValidTypes> Parsing::ParseMustContains(const QString& must_contain_i
     return must_contain;
 }
 
-std::vector<Substitution> Parsing::ParseSubstitutions(const QString& substitutions){
-    const QStringList parts = substitutions.split(QRegExp("\\s+"), QString::SkipEmptyParts);
-    return {};
+ValidTypes Parsing::ParseNumber(const QString& num_str){
+
+    bool is_int=false;
+    const int integer = num_str.toInt(&is_int);
+    if (is_int){
+        std::cout << "Adding " << num_str.toStdString() << " as a int" << std::endl;
+        return integer;
+    }
+
+    bool is_float=false;
+    const float flt = num_str.toFloat(&is_float);
+    if (is_float){
+        std::cout << "Adding " << num_str.toStdString() << " as a float" << std::endl;
+        return flt;
+    }
+    //TODO should really report the error to the caller
+    return 0;
+}
+std::vector<Substitution> Parsing::ParseSubstitutions(const QString& substitutions_str){
+    //User should express as a string like
+    //"10 20 15 17"
+    // Which should parse to {{.from=10,to=20},{.from=15,.to=17}}
+    std::cout << "RAW sub_str" << substitutions_str.toStdString() << std::endl;
+
+    Substitutions substitutions={};
+    const QStringList parts = substitutions_str.split(QRegExp("\\s+"), QString::SkipEmptyParts);
+    if (parts.size()%2==0){
+        for(int i=0;i<parts.size();i+=2){
+            Substitution s={
+                ParseNumber(parts[i]),
+                ParseNumber(parts[i+1])
+            };
+            substitutions.push_back(s);
+        }
+    }else{
+        std::cerr << "Odd number of subsititutions provided("<< parts.size() << "). Not sure what to do?!?!?" << std::endl;
+    }
+
+    return substitutions;
 }
 
 pid_t Parsing::GetPID(const QString& pid_box_contents){

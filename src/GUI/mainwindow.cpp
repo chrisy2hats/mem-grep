@@ -7,7 +7,6 @@ MainWindow::MainWindow(QWidget *parent) :
 {
     ui->setupUi(this);
 
-    ui->ContainingBox->setText("40");
     ui->SearchBssCheckBox->setChecked(true);
     ui->SearchStackCheckBox->setChecked(true);
 
@@ -23,7 +22,7 @@ void MainWindow::on_GoButton_clicked()
     const size_t min_size = Parsing::ParseMin(ui->MineSizeBox->text());
     const size_t max_size = Parsing::ParseMax(ui->MaxSizeBox->text());
     const std::vector<ValidTypes> must_contain = Parsing::ParseMustContains(ui->ContainingBox->text());
-    const std::vector<Substitution> substitutions = Parsing::ParseSubstitutions(ui->SubstitutionBox->text());
+    const std::vector<Substitution> substitutions = Parsing::ParseSubstitutions(ui->SubstitutionsBox->text());
     const pid_t pid = Parsing::GetPID(ui->PIDBox->text());
 
     const bool search_bss = ui->SearchBssCheckBox->isChecked();
@@ -69,6 +68,7 @@ void MainWindow::InsertPtrToTextbox(const RemoteHeapPointer& ptr){
     ui->OutputBox->setText(ui->OutputBox->toPlainText() +
                            "Pointer Location:" + QString::number((size_t)ptr.actual_address,16) + "Points to:" +
                            QString::number((size_t)ptr.points_to,16) +
-                           " size:" + QString::number(ptr.size_pointed_to)
+                           " size:" + QString::number(ptr.size_pointed_to) +
+                           " children:" + QString::number(ptr.total_sub_pointers)
                            + '\n');
 }

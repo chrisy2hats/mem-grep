@@ -129,7 +129,7 @@
      </rect>
     </property>
    </widget>
-   <widget class="QLabel" name="SubstitutionBox">
+   <widget class="QLabel" name="SubstitutionLabel">
     <property name="geometry">
      <rect>
       <x>870</x>
