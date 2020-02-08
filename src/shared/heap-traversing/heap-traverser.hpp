@@ -55,7 +55,7 @@ class HeapTraverser {
   constexpr static size_t kAlreadyVisitedFlag =
 		  0b0100000000000000000000000000000000000000000000000000000000000000;
 
-  static void SetAlreadyVisited(const void* address);
+  void SetAlreadyVisited(const void* address);
   [[nodiscard]] bool IsAlreadyVisited(const void* address) const;
 
   [[nodiscard]] inline void* LocalToRemote(const void* local_address) const;

@@ -4,19 +4,21 @@ using std::cerr;
 using std::cout;
 
 HeapTraverser::HeapTraverser(const pid_t pid, const MapsEntry& heap, const size_t max_heap_obj) :
-		heap_metadata_(heap), pid_(pid), max_heap_obj_(max_heap_obj) {
-}
+		heap_metadata_(heap),
+		pid_(pid),
+		max_heap_obj_(max_heap_obj)
+		{}
 
 HeapTraverser::~HeapTraverser() {
   delete[] heap_copy_;
 }
 
-size_t HeapTraverser::CountPointers(const std::vector<RemoteHeapPointer>& basePointers) {
+size_t HeapTraverser::CountPointers(const std::vector<RemoteHeapPointer>& base_pointers) {
   size_t total = 0;
-  for (const auto& i : basePointers) {
+  for (const auto& i : base_pointers) {
     total += i.total_sub_pointers;
   }
-  total += basePointers.size();
+  total += base_pointers.size();
   return total;
 }
 
@@ -63,7 +65,12 @@ std::vector<RemoteHeapPointer> HeapTraverser::TraversePointers(
     cerr << "WARNING: HeapTraverser asked to traverse a empty list of pointers.\n";
     return {};
   }
-  const unsigned int hardware_thread_count = std::thread::hardware_concurrency();
+  // As we are traversing a tree our memory accesses are not predictable to the CPU so
+  // our threads are encountering many TLB misses and getting swapped out so having threads
+  // than cores is, in most scenarios, beneficial for performance.
+  constexpr auto kThreadsPerCore = 2;
+
+  const unsigned int hardware_thread_count = std::thread::hardware_concurrency() * kThreadsPerCore;
   std::vector<std::future<void>> thread_futures(hardware_thread_count);
 
   // std::launch::async requires a lambda or a std::function.
@@ -92,7 +99,7 @@ std::vector<RemoteHeapPointer> HeapTraverser::TraversePointers(
 }
 
 RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
-  const char* block_start = (char*)RemoteToLocal(base.points_to);
+  const char* const block_start = (char*)RemoteToLocal(base.points_to);
   void* current_8_bytes;
 
   base.contains_pointers_to.reserve(16);
@@ -116,17 +123,21 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
 
       if (pointed_to_size == 0 || pointed_to_size > max_heap_obj_) continue;
 
-      RemoteHeapPointer child_pointer = {actual_address,
+      const RemoteHeapPointer child_pointer = {actual_address,
 		      address_pointed_to,
 		      pointed_to_size,
 		      0,
 		      {}
       };
-
-      child_pointer = FollowPointer(child_pointer);
       base.contains_pointers_to.push_back(child_pointer);
-      base.total_sub_pointers += child_pointer.total_sub_pointers;
     }
+  }
+  // This loop could be combined with the loop above however finding all the child pointers
+  // then traversing the found child pointers is a more cache friendly approach as we iterate over
+  // the memory pointed to by block_start in a predictable way.
+  for (auto& ptr : base.contains_pointers_to) {
+    ptr = FollowPointer(ptr);
+    base.total_sub_pointers += ptr.total_sub_pointers;
   }
 
   base.total_sub_pointers += base.contains_pointers_to.size();
@@ -146,7 +157,7 @@ void HeapTraverser::SetAlreadyVisited(const void* address) {
   *size_location = new_val;
 }
 
-bool HeapTraverser::IsAlreadyVisited(const void* address) const {
+[[nodiscard]] bool HeapTraverser::IsAlreadyVisited(const void* address) const {
   const auto size_location = static_cast<size_t*>(SubFromVoid(address,sizeof(void*)));
   const bool already_visited = (*size_location) & kAlreadyVisitedFlag;
   return already_visited;
