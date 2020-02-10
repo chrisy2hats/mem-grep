@@ -15,6 +15,10 @@ option(BUILD_AS_CLI "Build as a CLI application" ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Werror -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough")
+if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
+    #Force clang to build std lib function in debug. Otherwise GDB can't see stdlib objects properly
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
+endif ()
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -march=native")
 set(EXECUTABLE_OUTPUT_PATH "${MEM-GREP-OUT}")
 
