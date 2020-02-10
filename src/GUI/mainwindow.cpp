@@ -36,6 +36,10 @@ void MainWindow::on_GoButton_clicked()
         search_stack,
         0, //stack_frames_to_search (0 =all)
         8192, //max_heap_obj_size
+        0, //Min child
+        0, //maxchild
+        0, //min dec
+        0, //max dec
         min_size,
         max_size,
         must_contain,

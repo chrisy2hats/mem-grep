@@ -66,6 +66,7 @@ typedef std::vector<Substitution> Substitutions;
 // Both CLI and GUIs use this struct to represent the users query
 struct Query{
   pid_t pid;
+  //Pointer discovery parameters
   bool search_bss;
   bool search_stack;
   bool traverse_bss_pointers;
@@ -73,9 +74,16 @@ struct Query{
   size_t stack_frames_to_search;
   size_t max_heap_obj_size;
 
+  //Pointer filtering parameters
+  size_t min_children;
+  size_t max_children;
+  size_t min_decendants;
+  size_t max_decendants;
   size_t min_size;
   size_t max_size;
   std::vector<ValidTypes> must_contain;
+
+  //Post-filtering actions
   Substitutions subsitutions;
 };
 #endif	// MEM_GREP_UTILS_HPP

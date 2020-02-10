@@ -5,7 +5,7 @@ using std::cout;
 using std::cerr;
 
 #ifdef CLI
-//CLI Main If run via GUI AnalyseProgram is called directly
+//If run via GUI AnalyseProgram is called directly
 int main(int argc, char** argv){
   const CLIArgs userArgs = ArgumentParser::parseArguments(argc, argv);
   const Query query = {
@@ -18,6 +18,8 @@ int main(int argc, char** argv){
 	userArgs.max_heap_obj_size,
 
 	//CLI parsing for these arguments is still TODO
+	0,
+	0,
 	0,
 	0,
 	{},
