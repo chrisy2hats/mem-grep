@@ -47,21 +47,51 @@ std::string MapParser::GetExecutablePath() {
   string line;
   while (std::getline(maps_file, line)) {
     MapsEntry entry = ParseLine(line);
-    if (IsBssEntry(entry))
+    if (IsBssEntry(entry)) {
       bss_ = entry;
-    if (IsHeapEntry(entry))
-      heap_ = entry;
-    if (IsStackEntry(entry))
+      entries.push_back(entry);
+      continue;
+    }
+    if (IsHeapEntry(entry)) {
+      heap_sections_.push_back(entry);
+      entries.push_back(entry);
+      continue;
+    }
+    if (IsStackEntry(entry)) {
       stack_ = entry;
-    if (IsDataEntry(entry))
+      entries.push_back(entry);
+      continue;
+    }
+    if (IsDataEntry(entry)) {
       data_ = entry;
-    if (IsTextEntry(entry))
-      text_sections_.push_back(entry);
-    if (IsMmapEntry(entry))
+      entries.push_back(entry);
+      continue;
+    }
+    if (IsTextEntry(entry)) {
+      text_ = entry;
+      continue;
+    }
+    if (IsMmapEntry(entry)) {
       mmap_sections_.push_back(entry);
-
+      entries.push_back(entry);
+      continue;
+    }
     entries.push_back(entry);
   }
+  if (heap_sections_.empty()){
+    cerr << "Target program appears to have no heap.\n";
+  }else{
+    if (AreContiguous(heap_sections_)) {
+      heap_ = MergeContiguousEntries(heap_sections_);
+      cout << "Multiple heaps being treated as one as they are contiguous\n";
+      cout << "Merged heap: " << heap_ << "\n";
+    } else {
+      //TODO support non contig multi-heap programs
+      cerr << "Non-contiguous multi heap programs currently not supported\n";
+      exit(1);
+    }
+  }
+
   maps_file.close();
   return entries;
 }
@@ -71,33 +101,32 @@ std::string MapParser::GetExecutablePath() {
 //    address           perms offset  dev   inode       pathname
 //    00400000-00452000 r-xp 00000000 08:02 173521      /usr/bin/dbus-daemon
 struct MapsEntry MapParser::ParseLine(const std::string &line) const {
-  struct MapsEntry mapEntry = {};
 
   if (line.empty())
-    return mapEntry;
+    return kEmptyMapsEntry;
 
   std::vector<size_t> spaces = {};
   for (size_t i = 0; i < line.length(); i++) {
-    if (line[i] == ' ') {
+    if (std::isspace(line.at(i)))
       spaces.emplace_back(i + 1);
-    }
   }
   // A valid maps line will have atleast 5 spaces in it and contain a '-'
   if (spaces.size() < 5) {
-    return mapEntry;
+    return kEmptyMapsEntry;
   }
 
-  const auto first_dash = line.find("-");
+  MapsEntry mapEntry = kEmptyMapsEntry;
+  const auto first_dash = line.find('-');
   if (first_dash == string::npos)
     return mapEntry;
 
   const string start_str = line.substr(0, first_dash);
   const uint64_t start = std::stoul(start_str, 0, 16);
-  memcpy(&mapEntry.start, &start, sizeof(void *));  // UGLY
+  memcpy(&mapEntry.start, &start, sizeof(void *));
 
   const string end_str = line.substr(first_dash + 1, spaces[0]);
   const uint64_t end = std::stoul(end_str, 0, 16);
-  memcpy(&mapEntry.end, &end, sizeof(void *));	// UGLY
+  memcpy(&mapEntry.end, &end, sizeof(void *));
   mapEntry.size = (char *)mapEntry.end - (char *)mapEntry.start;
 
   mapEntry.permissions = line.substr(spaces[0], spaces[1] - spaces[0] - 1);
@@ -110,6 +139,37 @@ struct MapsEntry MapParser::ParseLine(const std::string &line) const {
   mapEntry.file_path = file_path;
 
   return mapEntry;
+}
+
+// Take the .start from the first heap and the .end from the last heap
+MapsEntry MapParser::MergeContiguousEntries(const std::vector<MapsEntry> &entries) const {
+  if (entries.empty())
+    return kEmptyMapsEntry;
+
+  MapsEntry merged_heap = entries[0];
+  merged_heap.end = entries[entries.size() - 1].end;
+  merged_heap.size = reinterpret_cast<size_t>(SubFromVoid(merged_heap.end, merged_heap.start));
+  return merged_heap;
+}
+
+bool MapParser::AreContiguous(std::vector<MapsEntry>& entries) const {
+  //We consider one entry contiguous
+  if (entries.size() <= 1)
+    return true;
+
+  const auto kCompareStart = [] (const MapsEntry& a,const MapsEntry& b) -> bool {
+    return a.start < b.start;
+  };
+  std::sort(begin(entries),end(entries),kCompareStart);
+
+  MapsEntry previous = entries[0];
+  for (size_t i=1;i<entries.size();i++){
+    if (entries[i].start != previous.end)
+      return false;
+
+    previous=entries[i];
+  }
+  return true;
 }
 
 bool MapParser::IsExecutable(const MapsEntry &entry) const {

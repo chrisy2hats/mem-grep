@@ -12,8 +12,10 @@
 #include <unistd.h>
 #include <climits>  //For PATH_MAX constant
 
-// Representing a single line of the /proc/PID/maps file in a struct
-// There will be as many MAPS_ENTRYs as lines in the maps file
+#include "utils.hpp"
+
+// A struct representing a single line of the /proc/PID/maps file in a struct
+// There will be as many MAPS_ENTRY as lines in the maps file
 // This is what the maps file looks like
 // address           perms offset  dev   inode       pathname
 // 00400000-00452000 r-xp 00000000 08:02 173521      /usr/bin/dbus-daemon
@@ -21,7 +23,6 @@
 // 00652000-00655000 rw-p 00052000 08:02 173521      /usr/bin/dbus-daemon
 // 00e03000-00e24000 rw-p 00000000 00:00 0           [heap]
 // 00e24000-011f7000 rw-p 00000000 00:00 0           [heap]
-
 struct MapsEntry {
   void *start;
   void *end;
@@ -36,44 +37,44 @@ struct MapsEntry {
 std::ostream &operator<<(std::ostream &o, const MapsEntry &m);
 
 class MapParser {
-  public:
+ public:
   explicit MapParser(pid_t pid);
 
-  [[nodiscard]] std::vector<struct MapsEntry> ParseMap();
-  [[nodiscard]] struct MapsEntry getStoredStack() const { return stack_; }
+  [[nodiscard]] std::vector<MapsEntry> ParseMap();
+  [[nodiscard]] MapsEntry getStoredStack() const { return stack_; }
+  [[nodiscard]] MapsEntry getStoredHeap() const { return heap_; }
+  [[nodiscard]] MapsEntry getStoredBss() const { return bss_; }
+  [[nodiscard]] MapsEntry getStoredData() const { return data_; }
+  [[nodiscard]] MapsEntry getStoredText() const { return text_; }
+  [[nodiscard]] std::vector<MapsEntry> getStoredMmap() const { return mmap_sections_; }
 
-  // TODO a program can have multiple heaps if it is multi-threaded. This function needs to return a
-  // std::vector of heaps
-  [[nodiscard]] struct MapsEntry getStoredHeap() const { return heap_; }
-  [[nodiscard]] struct MapsEntry getStoredBss() const { return bss_; }
-  [[nodiscard]] struct MapsEntry getStoredData() const { return data_; }
-
-  [[nodiscard]] std::vector<struct MapsEntry> getStoredText() const { return text_sections_; }
-
-  [[nodiscard]] std::vector<struct MapsEntry> getStoredMmap() const { return mmap_sections_; }
-
-  protected:
-  private:
+ private:
   const pid_t pid_;
-  const struct MapsEntry kEmptyMapsEntry = {nullptr, nullptr, "", "", "", "", "", 0};
+  const MapsEntry kEmptyMapsEntry = {nullptr, nullptr, "", "", "", "", "", 0};
+  enum ALLOCATOR{
+    GLIBC, //Linux default
+    JEMALLOC, //FreeBSD default
+    PTMALLOC,
+    TCMALLOC //From Google. Used in games i.e. TF2
+  };
 
-  struct MapsEntry stack_ = kEmptyMapsEntry;
-  struct MapsEntry heap_ = kEmptyMapsEntry;
-  struct MapsEntry bss_ = kEmptyMapsEntry;
-  struct MapsEntry data_ = kEmptyMapsEntry;
-  std::vector<struct MapsEntry> text_sections_={};
-  std::vector<struct MapsEntry> mmap_sections_={};
+  MapsEntry merged_heaps_ = kEmptyMapsEntry;
+  MapsEntry stack_ = kEmptyMapsEntry;
+  MapsEntry heap_ = kEmptyMapsEntry;
+  MapsEntry bss_ = kEmptyMapsEntry;
+  MapsEntry data_ = kEmptyMapsEntry;
+  MapsEntry text_ = kEmptyMapsEntry;
+  std::vector<MapsEntry> mmap_sections_={};
+  std::vector<MapsEntry> heap_sections_ = {};
   std::string executable_path_="";
 
-  // Rudimentary functions that simply check for a certain character in the MapsEntry.permissions
-  // string
+  // Rudimentary functions that check for a certain character in the MapsEntry.permissions string
   [[nodiscard]] bool IsExecutable(const MapsEntry &entry) const;
   [[nodiscard]] bool IsReadable(const MapsEntry &entry) const;
   [[nodiscard]] bool IsWriteable(const MapsEntry &entry) const;
   [[nodiscard]] bool IsPrivate(const MapsEntry &entry) const;
 
-  // Higher level functions returning a combination of the above 4 functions and checking the
-  // MapsEntry.file_path
+  // Higher level functions returning a combination of the above 4 functions and checking the MapsEntry.file_path
   [[nodiscard]] bool IsDataEntry(const MapsEntry &entry) const;
   [[nodiscard]] bool IsTextEntry(const MapsEntry &entry) const;
   [[nodiscard]] bool IsHeapEntry(const MapsEntry &entry) const;
@@ -90,6 +91,24 @@ class MapParser {
 #ifdef UNIT_TEST
   public:
 #endif
-  [[nodiscard]] struct MapsEntry ParseLine(const std::string &line) const;
+  [[nodiscard]] MapsEntry ParseLine(const std::string &line) const;
+
+  // Some programs have multiple heaps.
+  // If they are contiguous in memory we can treat them as one giant heap
+  // i.e. These heaps are all contiguous as the next heap starts when the previous one ends
+  // 09afa000-0df3a000 rw-p 00000000 00:00 0                                  [heap]
+  // 0df3a000-0df46000 rwxp 00000000 00:00 0                                  [heap]
+  // 0df46000-13dae000 rw-p 00000000 00:00 0                                  [heap]
+  // 13dae000-13dc3000 rwxp 00000000 00:00 0                                  [heap]
+  // 13dc3000-13dc4000 rw-p 00000000 00:00 0                                  [heap]
+  // 13dc4000-13dd7000 rwxp 00000000 00:00 0                                  [heap]
+  // 13dd7000-4cb94000 rw-p 00000000 00:00 0                                  [heap]
+  //This also sorts the entries by their .start values
+  [[nodiscard]] bool AreContiguous(std::vector<MapsEntry>& entries) const;
+
+  // Combine all heap entries into one.
+  // In a non multi heap program it will simply return the heap unchanged
+  //This method assumes the entries are sorted.
+  MapsEntry MergeContiguousEntries(const std::vector<MapsEntry> &entries) const;
 };
 #endif

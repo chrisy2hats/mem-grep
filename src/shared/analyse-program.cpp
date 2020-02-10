@@ -17,7 +17,7 @@ AnalysisResultOrErr AnalyseProgram(const Query& query) {
   const MapsEntry heapMetadata = parser.getStoredHeap();
   const MapsEntry bss = parser.getStoredBss();
   const MapsEntry data = parser.getStoredData();
-  const std::vector<MapsEntry> text = parser.getStoredText();
+  const MapsEntry text = parser.getStoredText();
 
   const auto kFilterLambda = LambdaCreator::GetFilterLambda(query.pid, query);
   std::vector<RemoteHeapPointer> BssMatches;
@@ -39,7 +39,7 @@ AnalysisResultOrErr AnalyseProgram(const Query& query) {
   std::vector<RemoteHeapPointer> StackMatches;
   if (query.search_stack) {
     const auto stackSearcher =
-		    StackSearcher(stack.start, text[0], query.pid, query.max_heap_obj_size);
+		    StackSearcher(stack.start, text, query.pid, query.max_heap_obj_size);
     const auto heapPointersOnStack = stackSearcher.findHeapPointers(
 		    stack.end, heapMetadata, query.stack_frames_to_search);
     cout << "Found " << heapPointersOnStack.size() << " pointers to the heap on the stack\n";
