@@ -1,5 +1,7 @@
 cmake_minimum_required(VERSION 3.00)
 project(mem-grep)
+set(MEM-GREP-ROOT "${CMAKE_CURRENT_SOURCE_DIR}")
+set(MEM-GREP-OUT "${MEM-GREP-ROOT}/out")
 
 #pthreads on Unix-like systems
 FIND_PACKAGE (Threads REQUIRED)
@@ -14,7 +16,7 @@ option(BUILD_AS_CLI "Build as a CLI application" ON)
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Werror -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough")
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -march=native")
-set(EXECUTABLE_OUTPUT_PATH "out")
+set(EXECUTABLE_OUTPUT_PATH "${MEM-GREP-OUT}")
 
 add_executable(mem-grep
         src/CLI/main.cpp
