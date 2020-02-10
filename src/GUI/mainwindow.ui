@@ -214,6 +214,19 @@
      <string>Unique Size(TODO)</string>
     </property>
    </widget>
+   <widget class="QLabel" name="BackendErrorLabel">
+    <property name="geometry">
+     <rect>
+      <x>207</x>
+      <y>7</y>
+      <width>591</width>
+      <height>51</height>
+     </rect>
+    </property>
+    <property name="text">
+     <string/>
+    </property>
+   </widget>
   </widget>
   <widget class="QToolBar" name="mainToolBar">
    <attribute name="toolBarArea">

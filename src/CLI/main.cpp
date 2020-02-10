@@ -32,7 +32,7 @@ int main(int argc, char** argv){
     return 0;
   } else {
     const auto error_number = std::get<ANALYSE_PROGRAM_ERROR>(analysis_result);
-    cerr << "Analyse program returned an error " << error_number << "\n";
+    cerr << "Analyse program returned an error: " << ANALYSE_PROGRAM_ERROR_STR[error_number] << "\n";
     return error_number;
   }
 }

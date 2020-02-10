@@ -60,9 +60,10 @@ std::vector<RemoteHeapPointer> MainWindow::ExecuteQuery(const Query q){
         std::cout << "backend returned " << matches.size() << " matches" << std::endl;
         return matches;
     }else{
-        //TODO handle/report error
-        size_t error_code = std::get<ANALYSE_PROGRAM_ERROR>(result);
-        std::cout << "backend return error value " << error_code << std::endl;
+        const size_t error_code = std::get<ANALYSE_PROGRAM_ERROR>(result);
+        const auto error_string = ANALYSE_PROGRAM_ERROR_STR[error_code];
+        std::cout << "backend return error value " << error_string << std::endl;
+        ui->BackendErrorLabel->setText(error_string);
         return {};
     }
 }
