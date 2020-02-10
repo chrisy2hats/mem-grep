@@ -12,6 +12,8 @@ if (BUILD_UNIT_TESTS)
 endif()
 
 
+option(BUILD_WITH_SANITISER "Build with address and UB sanitisation" OFF)
+
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Werror -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough")
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
@@ -20,6 +22,9 @@ if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
 endif ()
 set(CMAKE_CXX_FLAGS_RELEASE "-O2 -march=native")
 set(EXECUTABLE_OUTPUT_PATH "${MEM-GREP-OUT}")
+if (BUILD_WITH_SANITISER)
+	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined -fno-omit-frame-pointer")
+endif()
 
 add_executable(mem-grep
         src/CLI/main.cpp
