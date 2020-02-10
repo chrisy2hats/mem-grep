@@ -11,7 +11,6 @@ if (BUILD_UNIT_TESTS)
 	add_subdirectory(tests)
 endif()
 
-option(BUILD_AS_CLI "Build as a CLI application" ON)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Werror -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough")
@@ -39,9 +38,6 @@ add_executable(mem-grep
 		src/shared/misc/utils.hpp src/shared/misc/utils.cpp
 		src/shared/analyse-program.cpp src/shared/analyse-program.hpp)
 target_link_libraries(mem-grep Threads::Threads)
-if (BUILD_AS_CLI)
-	target_compile_definitions(mem-grep PRIVATE CLI)
-endif()
 
 add_custom_target(cppcheck
         WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"

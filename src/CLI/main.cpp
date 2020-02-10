@@ -4,7 +4,7 @@
 using std::cout;
 using std::cerr;
 
-#ifdef CLI
+//CLI Main
 //If run via GUI AnalyseProgram is called directly
 int main(int argc, char** argv){
   const CLIArgs userArgs = ArgumentParser::parseArguments(argc, argv);
@@ -36,4 +36,3 @@ int main(int argc, char** argv){
     return error_number;
   }
 }
-#endif
