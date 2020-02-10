@@ -32,8 +32,7 @@ char* RemoteMemory::Copy(const pid_t& pid, const void* start, const size_t& size
   // process_vm_readv returns the number of bytes it managed to read.
   // This may be less than the number requested.
   // On error(i.e. invalid start address) the function returns -1 bytes read
-  ssize_t nread = 0;
-  nread = process_vm_readv(pid, local, 1, remote, 1, 0);
+  const ssize_t nread = process_vm_readv(pid, local, 1, remote, 1, 0);
   if (nread != (ssize_t)size) {
     cerr << "Failed to copy memory from remote process at line:" << __LINE__
 	 << " in file:" << __FILE__ << "\n"

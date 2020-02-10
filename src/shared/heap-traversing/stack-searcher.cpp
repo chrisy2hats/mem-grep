@@ -36,7 +36,7 @@ std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(const void *curre
 
   assert(current_stack_end > stack_start_);
   const auto kCurrentStackSize = (size_t)(SubFromVoid(current_stack_end, stack_start_));
-  const char *kStackCopy = RemoteMemory::Copy(pid_, stack_start_, kCurrentStackSize);
+  const char* const kStackCopy = RemoteMemory::Copy(pid_, stack_start_, kCurrentStackSize);
 
   size_t frames_searched = 0;
   auto pointers_to_heap = std::vector<RemoteHeapPointer>();
@@ -67,7 +67,7 @@ std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(const void *curre
 	if (size_pointed_to == 0 || size_pointed_to > max_heap_obj_)
 	  continue;
       }
-      void *actual_address = AddToVoid(stack_start_, i);
+      void* const actual_address = AddToVoid(stack_start_, i);
       const RemoteHeapPointer heap_pointer = {
 		      actual_address, address_pointed_to,
 		      size_pointed_to, 0, {}

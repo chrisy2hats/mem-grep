@@ -107,7 +107,6 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
     memcpy(&current_8_bytes, block_start + i, sizeof(void*));
 
     if (IsHeapAddress(current_8_bytes)) {
-      void* actual_address = AddToVoid(base.points_to,i);
 
       const auto pointer_location = (void**)(block_start + i);
       const auto address_pointed_to = (void*)*(size_t*)pointer_location;
@@ -123,6 +122,7 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
 
       if (pointed_to_size == 0 || pointed_to_size > max_heap_obj_) continue;
 
+      void* actual_address = AddToVoid(base.points_to,i);
       const RemoteHeapPointer child_pointer = {actual_address,
 		      address_pointed_to,
 		      pointed_to_size,

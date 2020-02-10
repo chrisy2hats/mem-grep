@@ -13,11 +13,6 @@ using std::cout;
 	    "size_t.Don't be surprised if this doesn't work...\n";
   }
 
-  // If euid is 0 you are effectively running as root but not as root via setuid or other means
-  // This might work but I haven't tested. Warn the user that this isn't tested or supported and
-  // move on
-  auto euid = geteuid();
-  auto uid = getuid();
 
   const std::ifstream PTRACE_SCOPE_FILE("/proc/sys/kernel/yama/ptrace_scope");
   std::stringstream buffer;
@@ -27,9 +22,15 @@ using std::cout;
     return true;
   }
 
+  const auto uid = getuid();
   if (uid == 0) {
     return true;
   }
+
+  // If euid is 0 you are effectively running as root but not as root via setuid or other means
+  // This might work but I haven't tested. Warn the user that this isn't tested or supported and
+  // move on
+  const auto euid = geteuid();
   if (euid == 0) {
     cout << "WARNING: running with euid as 0 but not uid 0.\n This isn't supported but the program "
 	    "will attempt to continue.\n If you get permission denied type errors this is probably "

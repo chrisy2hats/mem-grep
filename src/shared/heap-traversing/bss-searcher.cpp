@@ -22,7 +22,7 @@ BssSearcher::BssSearcher(
     return {};
   }
 
-  const char *bss_copy = RemoteMemory::Copy(pid_, bss_metadata_.start, bss_metadata_.size);
+  const char* const bss_copy = RemoteMemory::Copy(pid_, bss_metadata_.start, bss_metadata_.size);
   assert(bss_copy != nullptr);
 
   std::vector<RemoteHeapPointer> matches;
