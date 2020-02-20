@@ -36,6 +36,7 @@ class RemoteMemory {
  private:
   static constexpr ssize_t kNotFoundOffset = -1;
 
+  static ssize_t FindFirst(const char* start, const size_t size, const std::string& to_find);
   template <typename T>
   static ssize_t FindFirst(const char* start, const size_t size, ValidTypes to_find) ;
   static ssize_t FindFirstJumpTable(

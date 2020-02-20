@@ -115,6 +115,20 @@ ssize_t RemoteMemory::Substitute(const pid_t pid,const RemoteHeapPointer& ptr,co
   return total_bytes_written;
 }
 
+ssize_t RemoteMemory::FindFirst(const char* start, const size_t size, const std::string& to_find) {
+  // Careful not to run strcmp as memory that isn't actually a string is likely not null terminated.
+  // We must use strncmp.
+  // Careful not to run strncmp near the end of the buffer as it could read
+  // past the end of the buffer pointed to by start
+  for (size_t i = 0; i < (size - to_find.size()); i++) {
+    if (std::strncmp(start + i, to_find.c_str(), to_find.size()) == 0) {
+      return i;
+    }
+  }
+
+  return kNotFoundOffset;
+}
+
 template <typename T>
 ssize_t RemoteMemory::FindFirst(const char* start, const size_t size, ValidTypes to_find) {
   const size_t sizeof_current = std::visit(ValidTypesVisitor{}, to_find);
@@ -132,7 +146,7 @@ ssize_t RemoteMemory::FindFirstJumpTable(
   // TODO find a way to not hard code this for the number of elements in ValidTypes
   // The best alternative found is to fail to compile if the number of ValidTypes changes
   // but will compile if the elements in ValidTypes are changed or reordered
-  static_assert(std::variant_size_v<ValidTypes> == 4,
+  static_assert(std::variant_size_v<ValidTypes> == 5,
 		"The number of elements in ValidTypes has changed."
 		"You need to update RemoteMemory::FindFirstJumpTable");
 
@@ -153,6 +167,12 @@ ssize_t RemoteMemory::FindFirstJumpTable(
   case 3:
     offset = FindFirst<std::variant_alternative_t<3, ValidTypes>>(
 		    ptr_copy, ptr.size_pointed_to, to_find);
+    break;
+  case 4:
+    static_assert(std::is_same_v<std::string, std::variant_alternative_t<4, ValidTypes>>,
+		  "The index of std::string in ValidTypes has changed. You need to update "
+		  "RemoteMemory::FindFirstJumpTable");
+    offset = FindFirst(ptr_copy, ptr.size_pointed_to, std::get<std::string>(to_find));
     break;
   }
   return offset;

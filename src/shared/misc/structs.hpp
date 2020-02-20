@@ -22,11 +22,11 @@ struct RemoteHeapPointer {
   // It is possible and should be expected that this variable will have garbage values in it
   // As false positive heap values will contain garbage which will be put in this variable
   //NOTE this is the size in bytes NOT in bits
-  size_t size_pointed_to =0;
+  size_t size_pointed_to = 0;
 
   // All pointers from BOTH directly scanning the block pointed to for heap address
   // AND pointers found by following those pointers in the initial block pointed to
-  size_t total_sub_pointers =0;
+  size_t total_sub_pointers = 0;
 
   // This contains pointers to other parts of the heap that are stored in heap memory pointed to
   // This is different to total_sub_pointers as it does NOT include pointers found by traversing pointers in the initial block pointed to
@@ -37,7 +37,7 @@ struct RemoteHeapPointer {
 std::ostream& operator << (std::ostream &o, const RemoteHeapPointer& p);
 
 //All valid types that the user can ask to search for or substitute
-typedef std::variant<int,float,double,size_t> ValidTypes;
+typedef std::variant<int,float,double,size_t,std::string> ValidTypes;
 
 //Allows for runtime equivalent of sizeof
 struct ValidTypesVisitor
@@ -53,6 +53,9 @@ struct ValidTypesVisitor
   }
   size_t operator()(size_t) const {
     return sizeof(size_t);
+  }
+  size_t operator()(const std::string& s){
+    return s.size();
   }
 };
 
