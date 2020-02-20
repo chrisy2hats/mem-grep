@@ -89,7 +89,7 @@ AnalysisResultOrErr AnalyseProgram(const Query& query) {
 	   << ":" << AllMatches[0].points_to << "\n";
     }
   } else {
-    return AMBIGUOUS_RESULT;
+    return AllMatches;
   }
   return AllMatches;
 }
