@@ -7,7 +7,7 @@ void ForeachTargetProgram(const std::function<void(const pid_t,const std::string
   };
 
   for (const std::string& program : target_programs){
-    std::cout << "Launching program:" << program << "\n";
+    std::cout << "Launching program:" << program << std::endl;
     const pid_t pid = LaunchProgram(program.c_str());
     functor(pid,program);
     kill(pid, SIGKILL);
@@ -18,10 +18,10 @@ pid_t LaunchProgram( const char* command, bool wait /*=true*/, int wait_time /*=
   pid_t pid;
   if ((pid = fork()) == 0) {
     // We are in the child process
-    printf("Launching target\n");
     pid_t lpid = execl(command, command, (char*)0);
     if (lpid == -1) {
-      perror("execl failed. Exiting...");
+      std::cerr << "execl failed. for command: " << command << std::endl;
+      perror("Exiting with error:");
       exit(1);
     }
 

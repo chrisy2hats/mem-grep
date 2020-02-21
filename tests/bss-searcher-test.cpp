@@ -31,7 +31,7 @@ TEST_CASE("BSS: 5 pointers target program") {
 }
 
 TEST_CASE("BSS: 0 pointers target program") {
-  const auto targetPath = "./runUntilManipulatedStack";
+  const auto targetPath = "./oneTwoSevenOnStack";
   int pid = LaunchProgram(targetPath);
 
   std::cout << "Analysing PID:" << pid << std::endl;
@@ -45,7 +45,7 @@ TEST_CASE("BSS: 0 pointers target program") {
   bss = parser.getStoredBss();
 
   REQUIRE(bss != NULL_MAPS_ENTRY);
-  REQUIRE(heapMetadata == NULL_MAPS_ENTRY);
+  REQUIRE(heapMetadata != NULL_MAPS_ENTRY);
   const auto b = BssSearcher(bss, pid, 2048);
   const auto heapPointers = b.FindHeapPointers(heapMetadata);
 
