@@ -78,17 +78,23 @@ std::string MapParser::GetExecutablePath() {
     }
     entries.push_back(entry);
   }
-  if (heap_sections_.empty()){
+  if (heap_sections_.empty()) {
     cerr << "Target program appears to have no heap.\n";
-  }else{
+  }
+  const bool multiple_heaps = heap_sections_.size() > 1;
+  if (multiple_heaps) {
     if (AreContiguous(heap_sections_)) {
       heap_ = MergeContiguousEntries(heap_sections_);
       cout << "Multiple heaps being treated as one as they are contiguous\n";
       cout << "Merged heap: " << heap_ << "\n";
     } else {
-      //TODO support non contig multi-heap programs
+      // TODO support non contig multi-heap programs
       cerr << "Non-contiguous multi heap programs currently not supported\n";
       exit(1);
+    }
+  } else {
+    if (!heap_sections_.empty()) {
+      heap_ = heap_sections_[0];
     }
   }
 
