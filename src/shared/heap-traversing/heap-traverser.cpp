@@ -13,48 +13,6 @@ HeapTraverser::~HeapTraverser() {
   delete[] heap_copy_;
 }
 
-size_t HeapTraverser::CountPointers(const std::vector<RemoteHeapPointer>& base_pointers) {
-  size_t total = 0;
-  for (const auto& i : base_pointers) {
-    total += i.total_sub_pointers;
-  }
-  total += base_pointers.size();
-  return total;
-}
-
-void HeapTraverser::PrintPointer(const RemoteHeapPointer& p, int indent_level /*=0*/) {
-  for (const auto& i : p.contains_pointers_to) {
-    for (int j = 0; j < indent_level; j++) {
-      cout << "\t";
-    }
-    cout << "\t" << i.points_to << " : " << i.actual_address << " : " << i.size_pointed_to << ":"
-	 << i.total_sub_pointers << "\n";
-    HeapTraverser::PrintPointer(i, indent_level + 1);
-  }
-}
-
-void HeapTraverser::PrintHeap(const std::vector<RemoteHeapPointer>& base_pointers) {
-  for (const auto& p : base_pointers) {
-    cout << "BASE:" << p.points_to << " : " << p.actual_address << " : " << p.size_pointed_to
-	 << " : " << p.total_sub_pointers << "\n";
-    HeapTraverser::PrintPointer(p);
-  }
-}
-
-void HeapTraverser::WorkerThread(std::vector<RemoteHeapPointer>& base_pointers,
-		std::atomic<uint64_t>& shared_index) {
-  size_t current_local_index = 0;
-  while ((current_local_index = shared_index++) < base_pointers.size()) {
-    // We MUST save the value when we increment shared_index and only use the returned value
-    // if we reference shared_index directly it could have been incremented by a different
-    // thread. i.e. "base_pointers.at(shared_index)=..." is unsafe and a race condition but
-    // "base_pointers.at(current_local_index) is safe
-
-    base_pointers.at(current_local_index) =
-		    HeapTraverser::FollowPointer(base_pointers.at(current_local_index));
-  }
-}
-
 std::vector<RemoteHeapPointer> HeapTraverser::TraversePointers(
 		std::vector<RemoteHeapPointer> base_pointers) {
   if (heap_copy_ == nullptr) {
@@ -88,7 +46,6 @@ std::vector<RemoteHeapPointer> HeapTraverser::TraversePointers(
     one_threads_future = std::async(std::launch::async, callable_worker, std::ref(base_pointers),
 		    std::ref(shared_index));
   }
-
   // Wait for all threads to complete
   // Each .wait call will block indefinitely until that thread terminates itself
   for (const auto& future : thread_futures) {
@@ -142,6 +99,20 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
 
   base.total_sub_pointers += base.contains_pointers_to.size();
   return base;
+}
+
+void HeapTraverser::WorkerThread(std::vector<RemoteHeapPointer>& base_pointers,
+                                 std::atomic<uint64_t>& shared_index) {
+  size_t current_local_index = 0;
+  while ((current_local_index = shared_index++) < base_pointers.size()) {
+    // We MUST save the value when we increment shared_index and only use the returned value
+    // if we reference shared_index directly it could have been incremented by a different
+    // thread. i.e. "base_pointers.at(shared_index)=..." is unsafe and a race condition but
+    // "base_pointers.at(current_local_index) is safe
+
+    base_pointers.at(current_local_index) =
+        HeapTraverser::FollowPointer(base_pointers.at(current_local_index));
+  }
 }
 
 [[nodiscard]] inline bool HeapTraverser::IsHeapAddress(const void* address) const {

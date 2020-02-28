@@ -33,7 +33,7 @@ TEST_CASE("Multi-layered bss pointers") {
   delete[] bssCopy;
   auto traverser = HeapTraverser(pid,heapMetadata,2048);
   auto deepPointers = traverser.TraversePointers(heapPointers);
-  REQUIRE(HeapTraverser::CountPointers(deepPointers) == 9);
+  REQUIRE(PointerCount(deepPointers) == 9);
 
   kill(pid, SIGKILL);
 }

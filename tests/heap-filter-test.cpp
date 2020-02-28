@@ -19,7 +19,7 @@ TEST_CASE("Exclude none"){
 
     const auto AlwaysTrue = [](const RemoteHeapPointer&) { return true; };
     auto matches = HeapFilter::FlattenAndFilter(traversed, AlwaysTrue);
-    REQUIRE(matches.size() == HeapTraverser::CountPointers(traversed));
+    REQUIRE(matches.size() == PointerCount(traversed));
   };
   ForeachTargetProgram(no_exclusions_returns_all);
 }

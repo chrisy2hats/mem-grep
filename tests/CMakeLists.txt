@@ -27,6 +27,7 @@ add_executable(unit-tests
         utils.cpp
         utils.hpp
 
+        ../src/shared/misc/structs.cpp ../src/shared/misc/structs.hpp
         ../src/shared/misc/map-parser.cpp ../src/shared/misc/map-parser.hpp
         ../src/shared/misc/remote-memory.cpp ../src/shared/misc/remote-memory.hpp
         ../src/shared/misc/prerun-checks.cpp ../src/shared/misc/prerun-checks.hpp

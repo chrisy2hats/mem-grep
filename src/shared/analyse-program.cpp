@@ -31,7 +31,7 @@ AnalysisResultOrErr AnalyseProgram(const Query& query) {
       const std::vector<RemoteHeapPointer> traversed =
               traverser.TraversePointers(heapPointersInBss);
       cout << "From " << heapPointersInBss.size() << " a further "
-       << HeapTraverser::CountPointers(traversed) - heapPointersInBss.size()
+       << PointerCount(traversed) - heapPointersInBss.size()
        << " heap pointers where found by traversing\n";
       BssMatches = HeapFilter::FlattenAndFilter(traversed, kFilterLambda);
     }
@@ -48,8 +48,9 @@ AnalysisResultOrErr AnalyseProgram(const Query& query) {
 
       const auto deepStackPointers = traverser.TraversePointers(heapPointersOnStack);
       cout << "From " << heapPointersOnStack.size() << " a further "
-	   << HeapTraverser::CountPointers(deepStackPointers) - heapPointersOnStack.size()
+	   << PointerCount(deepStackPointers) - heapPointersOnStack.size()
 	   << " heap pointers where found by traversing\n";
+      cout << deepStackPointers << "\n";
       StackMatches = HeapFilter::FlattenAndFilter(deepStackPointers, kFilterLambda);
     }
   }

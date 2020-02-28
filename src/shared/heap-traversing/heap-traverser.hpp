@@ -15,13 +15,8 @@
 class HeapTraverser {
  public:
   std::vector<RemoteHeapPointer> TraversePointers(std::vector<RemoteHeapPointer> base_pointers);
-  size_t static CountPointers(const std::vector<RemoteHeapPointer>& base_pointers);
   HeapTraverser(const pid_t pid, const MapsEntry& heap, const size_t max_heap_obj);
   ~HeapTraverser();
-
-  // TODO move out to non heap-traversal specific RemoteHeapPointer print function in utils.cpp
-  void static PrintPointer(const RemoteHeapPointer& p, int indent_level = 0);
-  void static PrintHeap(const std::vector<RemoteHeapPointer>& base_pointers);
 
   //Don't allow copying
   //If copying is needed in the future be careful with the raw ptr to heap_copy_

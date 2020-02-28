@@ -33,8 +33,15 @@ struct RemoteHeapPointer {
   std::vector<RemoteHeapPointer> contains_pointers_to;
 };
 
-// Rudimentary overload of << so that we can "std::cout <<" a RemoteHeapPointer
+//Only prints the information in the RemoteHeapPointer struct
 std::ostream& operator << (std::ostream &o, const RemoteHeapPointer& p);
+
+//Same as above but will recurse into all pointers in contains_pointers_to
+std::ostream& RecursePrintPointer(std::ostream& o, const RemoteHeapPointer& p, int indent_level = 0);
+
+// Print entire heap (vec of base pointers)
+std::ostream& operator << (std::ostream& o,const std::vector<RemoteHeapPointer>& base_pointers);
+size_t PointerCount(const std::vector<RemoteHeapPointer>& base_pointers);
 
 //All valid types that the user can ask to search for or substitute
 typedef std::variant<int,float,double,size_t,std::string> ValidTypes;
