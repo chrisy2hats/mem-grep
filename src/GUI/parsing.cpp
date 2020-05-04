@@ -81,8 +81,17 @@ pid_t Parsing::GetPID(const QString& pid_box_contents){
         pid = pidof(pid_box_contents.toStdString());
     }
 
-    //TODO Handle if PID parsing failed (PID is 0)
     return pid;
+}
+
+size_t* Parsing::ParseSubstituteObjAddr(const QString& sub_obj_addr_contents){
+    bool is_valid = false;
+    size_t* addr = (size_t*)sub_obj_addr_contents.toULongLong(&is_valid,16);
+
+    if (!is_valid)
+        addr = nullptr;
+
+    return addr;
 }
 
 size_t Parsing::ParseMax(const QString& max_box_contents){

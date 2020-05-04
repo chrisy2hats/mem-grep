@@ -27,6 +27,8 @@ private slots:
 
     void on_GoButton_clicked();
 
+    void on_SubstituteButton_clicked();
+
 private:
     Ui::MainWindow *ui;
     std::vector<RemoteHeapPointer> ExecuteQuery(const Query q);

@@ -10,6 +10,8 @@ class Parsing{
     static size_t ParseMax(const QString& max_box_contents);
     static size_t ParseMin(const QString& min_box_contents);
     static pid_t GetPID(const QString& pid_box_contents);
+    static size_t* ParseSubstituteObjAddr(const QString& sub_obj_addr_contents);
+
  private:
     static ValidTypes ParseNumber(const QString& num_str);
 };
