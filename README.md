@@ -4,7 +4,7 @@ mem-grep is a utiling for finding information about the memory layout of a runni
 The aim is to provide a tool for the same usecase as [CheatEngine](https://www.cheatengine.org/) but for Linux  
 Currently the tool focuses on finding and traversing heap pointers by exploiting the known layout of ELF binaries and the glibc heap
 
-## Building
+## Building - Backend
 ### Dependencies    
 A C++ compiler (both g++ and clang++ tested)  
 cmake (Version 3 or newer)  
@@ -21,7 +21,18 @@ From the root of the repository run
 ``
 cmake . && make -j $(nproc) mem-analyze
 ``
+## Building - GUI  
+## On an Ubuntu 18.04 system the GUI build dependencies can be satisfied by running  
+``
+sudo apt update && sudo apt install qtbase5-dev qt5-qmake build-essential qt5-default  
+``
 
+## Compile GUI  
+``
+qmake src/GUI/mem-grep.pro && make  
+``
+
+There should then be a mem-grep-gui binary in your current directory  
 
 **System Configuration**  
 Inorder to be allowed to access a remote processes memory the program must be run as root  
@@ -46,10 +57,10 @@ sudo apt update && sudo apt install -y nasm binutils
 
 Once Catch2 is cloned and depencies satisfied the unit tests can be built via  
 ``
-cmake . && make -j $(nproc) unit-tests bssHeapPointers runUntilManipulatedStack runUntilManipulatedHeap asmTarget  
+cmake -DBUILD_UNIT_TESTS=ON . && make -j $(nproc) asmTarget  bssHeapPointers multiLayeredBssHeapPointers  oneTwoSevenOnStack  onheapint  onstackint  runUntilManipulatedHeap  unit-tests
 ``  
 This will output the "unit-tests" binary and other required binaries in the "out" directory  
 The unit tests can then be run via  
 ``
-./out/unit-tests
+cd out && ./unit-tests
 ``
