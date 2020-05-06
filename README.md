@@ -55,7 +55,7 @@ To install these on Ubuntu 18.04 run
 sudo apt update && sudo apt install -y nasm binutils  
 ``
 
-Once Catch2 is cloned and depencies satisfied the unit tests can be built via  
+Once Catch2 is cloned and dependencies satisfied the unit tests can be built via  
 ``
 cmake -DBUILD_UNIT_TESTS=ON . && make -j $(nproc) asmTarget  bssHeapPointers multiLayeredBssHeapPointers  oneTwoSevenOnStack  onheapint  onstackint  runUntilManipulatedHeap  unit-tests
 ``  
