@@ -64,3 +64,8 @@ The unit tests can then be run via
 ``
 cd out && ./unit-tests
 ``
+
+EULA  
+This software should not be used to manipulate the memory of any program that is communicating with third parties such as games connected to a game server as this may negatively impact the experience of other players.
+
+
