@@ -99,7 +99,7 @@ size_t Parsing::ParseMax(const QString& max_box_contents){
     size_t max_size = max_box_contents.toULongLong(&valid_max_size);
     if (!valid_max_size){
         std::cout << "invalid max size defaulting to 8192 bytes" << std::endl;
-        valid_max_size=8192;
+        max_size=8192;
     }
     return max_size;
 }
@@ -109,7 +109,7 @@ size_t Parsing::ParseMin(const QString& min_box_contents){
     size_t min_size = min_box_contents.toULongLong(&valid_min_size);
     if (!valid_min_size){
         std::cout << "invalid min size defaulting to 0" << std::endl;
-        valid_min_size=0;
+        min_size=0;
     }
     return min_size;
 }

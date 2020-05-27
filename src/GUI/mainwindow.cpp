@@ -19,6 +19,7 @@ MainWindow::~MainWindow()
 
 void MainWindow::on_GoButton_clicked()
 {
+    ui->BackendErrorLabel->setText("");
     const size_t min_size = Parsing::ParseMin(ui->MineSizeBox->text());
     const size_t max_size = Parsing::ParseMax(ui->MaxSizeBox->text());
     const std::vector<ValidTypes> must_contain = Parsing::ParseMustContains(ui->ContainingBox->text());
