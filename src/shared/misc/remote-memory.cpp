@@ -85,8 +85,10 @@ bool RemoteMemory::Contains(const pid_t pid, const RemoteHeapPointer& ptr,
     ssize_t offset = FindFirstJumpTable(ptr,ptr_copy,i);
 
     // We failed to find a required element
-    if (offset == kNotFoundOffset)
+    if (offset == kNotFoundOffset) {
+      delete[] ptr_copy;
       return false;
+    }
 
     // Set the currently found match to 0 so if the user asks to find 2 of the same value the same
     // memory location won't match for both
