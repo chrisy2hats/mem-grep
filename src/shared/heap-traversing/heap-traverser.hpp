@@ -33,22 +33,7 @@ class HeapTraverser {
   // We may end up in an infinite loop due to memory address pointing to each other
   // i.e. a circular linked list in the remote process
   // We would recursively follow this forever until we stack overflow and segfault
-  // We avoid cycles by marking memory address in our heap copy as we visit them
-  // so we know not to analyse that address again
-
-  // The address marking process works as follows
-  // sizeof(void*) is 8 bytes which allows for a memory size
-  // of up to 2**64 but no current x86_64 processor support more than 2**48 of
-  // memory. According to https://www.amd.com/system/files/TechDocs/24593.pdf page 131
-  // This means we can use 2 to 22 most significant bits as flags for ourself
-  // without touching the actual size of the heap object
-  // We can utilse one of these bits to indicate that this address has already been visited
-  // And so should not be visited again
-  // The 2nd most significant bit is being utilised for this flag.
-  // This is explained in more detail with diagrams in the documentation here:
-  // TODO add link to project documentation
-  constexpr static size_t kAlreadyVisitedFlag =
-		  0b0100000000000000000000000000000000000000000000000000000000000000;
+  // We avoid cycles by storing memory address we have already visited
 
   void SetAlreadyVisited(const void* address);
   [[nodiscard]] bool IsAlreadyVisited(const void* address) const;
@@ -59,6 +44,13 @@ class HeapTraverser {
   const MapsEntry heap_metadata_;
   const pid_t pid_;
   const size_t max_heap_obj_;
+
+  // Store which memory addresses within the heap have already been visited
+  // TODO reduce the size of this by storing only every MINIMUM_OBJECT_SIZE. Check all objects are aligned to minimum object size
+  // If not we can still reduce it as it is unlikely that a malloc implementation will return unaligned pointers so we probably only need to store
+  // if one in every 8 bytes is visited
+  using BitVector = std::vector<bool>;
+  BitVector visited_storage_;
 
   char* heap_copy_ = nullptr;
 };

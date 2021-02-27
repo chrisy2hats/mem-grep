@@ -2,12 +2,15 @@
 
 using std::cerr;
 using std::cout;
+using BitVector = std::vector<bool>;
 
 HeapTraverser::HeapTraverser(const pid_t pid, const MapsEntry& heap, const size_t max_heap_obj) :
 		heap_metadata_(heap),
 		pid_(pid),
 		max_heap_obj_(max_heap_obj)
-		{}
+        {
+    visited_storage_ = BitVector(heap_metadata_.size/8);
+}
 
 HeapTraverser::~HeapTraverser() {
   delete[] heap_copy_;
@@ -72,10 +75,10 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
       const size_t pointed_to_size =
 		      GetMallocMetadata(local_address_pointed_to, pid_, max_heap_obj_, false, true);
 
-      if (IsAlreadyVisited(local_address_pointed_to))
+      if (IsAlreadyVisited(address_pointed_to))
 	continue;
       else
-	SetAlreadyVisited(local_address_pointed_to);
+    SetAlreadyVisited(address_pointed_to);
 
       if (pointed_to_size == 0 || pointed_to_size > max_heap_obj_) continue;
 
@@ -115,23 +118,26 @@ void HeapTraverser::WorkerThread(std::vector<RemoteHeapPointer>& base_pointers,
   }
 }
 
+// Checks if the pointer points to an address in the remote processes heap
 [[nodiscard]] inline bool HeapTraverser::IsHeapAddress(const void* address) const {
   const bool is_on_heap = address >= heap_metadata_.start && address <= heap_metadata_.end;
   return is_on_heap;
 }
 
-//Set the 2nd most significant bit 8 bytes before address
 void HeapTraverser::SetAlreadyVisited(const void* address) {
-  size_t* size_location = static_cast<size_t*>(SubFromVoid(address,sizeof(void*)));
-  assert((char*)size_location == ((char*)address - sizeof(void*)));
-  const size_t new_val = *size_location += kAlreadyVisitedFlag;
-  *size_location = new_val;
+  const size_t heap_offset = (size_t)address - (size_t)heap_metadata_.start;
+  const size_t byte_offset = heap_offset/8;
+  const size_t bit_into_byte = heap_offset % 8;
+  const size_t bit_offset = byte_offset + bit_into_byte;
+  visited_storage_[bit_offset] = 1;
 }
 
 [[nodiscard]] bool HeapTraverser::IsAlreadyVisited(const void* address) const {
-  const auto size_location = static_cast<size_t*>(SubFromVoid(address,sizeof(void*)));
-  const bool already_visited = (*size_location) & kAlreadyVisitedFlag;
-  return already_visited;
+  const size_t heap_offset = (size_t) address - (size_t) heap_metadata_.start;
+  const size_t byte_offset = heap_offset/8;
+  const size_t bit_into_byte = heap_offset % 8;
+  const size_t bit_offset = byte_offset + bit_into_byte;
+  return visited_storage_[bit_offset];
 }
 
 [[nodiscard]] inline void* HeapTraverser::LocalToRemote(const void* local_address) const {
