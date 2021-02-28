@@ -9,7 +9,7 @@ HeapTraverser::HeapTraverser(const pid_t pid, const MapsEntry& heap, const size_
 		pid_(pid),
 		max_heap_obj_(max_heap_obj)
         {
-    visited_storage_ = BitVector(heap_metadata_.size/8);
+    visited_storage_ = BitVector(heap_metadata_.size/(BITS_IN_A_BYTE*sizeof(void*)));
 }
 
 HeapTraverser::~HeapTraverser() {
@@ -124,20 +124,22 @@ void HeapTraverser::WorkerThread(std::vector<RemoteHeapPointer>& base_pointers,
   return is_on_heap;
 }
 
-void HeapTraverser::SetAlreadyVisited(const void* address) {
+// Look in the header file for an explanation
+[[nodiscard]] inline size_t HeapTraverser::CalculateBitVecOffset(const void* address) const{
   const size_t heap_offset = (size_t)address - (size_t)heap_metadata_.start;
-  const size_t byte_offset = heap_offset/8;
-  const size_t bit_into_byte = heap_offset % 8;
+  
+  const size_t byte_offset = (heap_offset/(BITS_IN_A_BYTE*(sizeof(void*))))*sizeof(void*);
+  const uint8_t bit_into_byte = (heap_offset/BITS_IN_A_BYTE) % 8;
   const size_t bit_offset = byte_offset + bit_into_byte;
-  visited_storage_[bit_offset] = 1;
+  return bit_offset;
+}
+
+void HeapTraverser::SetAlreadyVisited(const void* address) {
+  visited_storage_[CalculateBitVecOffset(address)] = 1;
 }
 
 [[nodiscard]] bool HeapTraverser::IsAlreadyVisited(const void* address) const {
-  const size_t heap_offset = (size_t) address - (size_t) heap_metadata_.start;
-  const size_t byte_offset = heap_offset/8;
-  const size_t bit_into_byte = heap_offset % 8;
-  const size_t bit_offset = byte_offset + bit_into_byte;
-  return visited_storage_[bit_offset];
+  return visited_storage_[CalculateBitVecOffset(address)];
 }
 
 [[nodiscard]] inline void* HeapTraverser::LocalToRemote(const void* local_address) const {

@@ -29,12 +29,23 @@ class HeapTraverser {
 		  std::atomic<uint64_t>& shared_index);
   [[nodiscard]] inline bool IsHeapAddress(const void* address) const;
 
-  // During traversal the same same memory address must not be visited twice as otherwise
+  // During traversal the same memory address must not be visited twice as otherwise
   // We may end up in an infinite loop due to memory address pointing to each other
   // i.e. a circular linked list in the remote process
   // We would recursively follow this forever until we stack overflow and segfault
   // We avoid cycles by storing memory address we have already visited
+  
+  // We store visited addresses using a BitVec that stores one bit for every sizeof(void*) bytes.
+  // So for x86_64 that is one bit for every 8 bytes which is 1/64th of the size of the heap
+  // We can store one bit per 8 bytes not for every byte as every sensible malloc implementation out there
+  // will only return aligned pointers even for malloc(x where x < sizeof(void*))
+  
+  // So for instance, if the heap starts at memory address 1000 and we have a pointer to 
+  // 1808 then when we visit the object at 1800 we will set the bit 
+  // 808/64 + (808/8)%8
+  // 12 +  1 = The 13th bit of the vector
 
+  [[nodiscard]] inline size_t CalculateBitVecOffset(const void* address) const;
   void SetAlreadyVisited(const void* address);
   [[nodiscard]] bool IsAlreadyVisited(const void* address) const;
 
@@ -44,12 +55,14 @@ class HeapTraverser {
   const MapsEntry heap_metadata_;
   const pid_t pid_;
   const size_t max_heap_obj_;
+  
+  static constexpr auto BITS_IN_A_BYTE=8;
 
-  // Store which memory addresses within the heap have already been visited
-  // TODO reduce the size of this by storing only every MINIMUM_OBJECT_SIZE. Check all objects are aligned to minimum object size
-  // If not we can still reduce it as it is unlikely that a malloc implementation will return unaligned pointers so we probably only need to store
-  // if one in every 8 bytes is visited
+  
+  // We can't use BitVec from <bitvec> as the size must be known at compile time
   using BitVector = std::vector<bool>;
+  
+  // Store which memory addresses within the heap have already been visited
   BitVector visited_storage_;
 
   char* heap_copy_ = nullptr;
