@@ -1,13 +1,13 @@
 #ifndef MEM_GREP_SRC_ANALYSE_PROGRAM_HPP_
 #define MEM_GREP_SRC_ANALYSE_PROGRAM_HPP_
 
-#include "misc/map-parser.hpp"
-#include "heap-traversing/bss-searcher.hpp"
-#include "misc/prerun-checks.hpp"
-#include "heap-traversing/stack-searcher.hpp"
-#include "heap-traversing/heap-traverser.hpp"
-#include "filtering/lambda-creator.hpp"
-#include "filtering/heap-filter.hpp"
+#include "../lib/misc/map-parser.hpp"
+#include "../lib/heap-traversing/bss-searcher.hpp"
+#include "../lib/misc/prerun-checks.hpp"
+#include "../lib/heap-traversing/stack-searcher.hpp"
+#include "../lib/heap-traversing/heap-traverser.hpp"
+#include "../lib/filtering/lambda-creator.hpp"
+#include "../lib/filtering/heap-filter.hpp"
 
 constexpr auto ANALYSE_PROGRAM_ERROR_LENGTH = 1;
 enum ANALYSE_PROGRAM_ERROR {

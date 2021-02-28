@@ -10,6 +10,7 @@ cmake_install.cmake*
 *.txt
 !CMakeLists.txt
 *.o
+*.a
 
 #Debug files
 core.*

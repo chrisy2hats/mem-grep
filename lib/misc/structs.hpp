@@ -70,6 +70,7 @@ struct Substitution {
   const ValidTypes from;
   const ValidTypes to;
 };
+
 typedef std::vector<Substitution> Substitutions;
 
 // The user can provide criteria to filter output by either from CLI arguments or via the GUI

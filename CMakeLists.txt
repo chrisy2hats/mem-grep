@@ -26,23 +26,28 @@ if (BUILD_WITH_SANITISER)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined -fno-omit-frame-pointer")
 endif()
 
-add_executable(mem-grep
+add_library(mem-grep-core lib/misc/map-parser.cpp lib/misc/map-parser.hpp
+		lib/heap-traversing/bss-searcher.cpp lib/heap-traversing/bss-searcher.hpp
+		lib/misc/malloc-metadata.cpp lib/misc/malloc-metadata.hpp
+		lib/misc/prerun-checks.cpp lib/misc/prerun-checks.hpp
+		lib/heap-traversing/stack-searcher.cpp lib/heap-traversing/stack-searcher.hpp
+		lib/heap-traversing/heap-traverser.cpp lib/heap-traversing/heap-traverser.hpp
+		lib/misc/structs.cpp lib/misc/structs.hpp
+		lib/misc/remote-memory.cpp lib/misc/remote-memory.hpp
+		lib/filtering/heap-filter.cpp lib/filtering/heap-filter.hpp
+		lib/filtering/lambda-creator.cpp lib/filtering/lambda-creator.hpp
+		lib/misc/utils.hpp lib/misc/utils.cpp)
+
+add_executable(cli
         src/CLI/main.cpp
 		src/CLI/argument-parsing/argument-parsing.cpp src/CLI/argument-parsing/argument-parsing.hpp
+		src/analyse-program.cpp src/analyse-program.hpp)
+		
+target_link_libraries(cli LINK_PRIVATE mem-grep-core)
 
-		src/shared/misc/map-parser.cpp src/shared/misc/map-parser.hpp
-		src/shared/heap-traversing/bss-searcher.cpp src/shared/heap-traversing/bss-searcher.hpp
-		src/shared/misc/malloc-metadata.cpp src/shared/misc/malloc-metadata.hpp
-		src/shared/misc/prerun-checks.cpp src/shared/misc/prerun-checks.hpp
-		src/shared/heap-traversing/stack-searcher.cpp src/shared/heap-traversing/stack-searcher.hpp
-		src/shared/heap-traversing/heap-traverser.cpp src/shared/heap-traversing/heap-traverser.hpp
-		src/shared/misc/structs.cpp src/shared/misc/structs.hpp
-		src/shared/misc/remote-memory.cpp src/shared/misc/remote-memory.hpp
-		src/shared/filtering/heap-filter.cpp src/shared/filtering/heap-filter.hpp
-		src/shared/filtering/lambda-creator.cpp src/shared/filtering/lambda-creator.hpp
-		src/shared/misc/utils.hpp src/shared/misc/utils.cpp
-		src/shared/analyse-program.cpp src/shared/analyse-program.hpp)
-target_link_libraries(mem-grep Threads::Threads)
+
+
+target_link_libraries(mem-grep-core Threads::Threads)
 
 add_custom_target(cppcheck
         WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
