@@ -5,6 +5,7 @@
 #include "../misc/malloc-metadata.hpp"
 #include "../misc/structs.hpp"
 #include "../misc/utils.hpp"
+#include "../datastructures/bool-vec.hpp"
 
 #include <iostream>
 #include <vector>
@@ -58,12 +59,9 @@ class HeapTraverser {
   
   static constexpr auto BITS_IN_A_BYTE=8;
 
-  
-  // We can't use BitVec from <bitvec> as the size must be known at compile time
-  using BitVector = std::vector<bool>;
-  
+
   // Store which memory addresses within the heap have already been visited
-  BitVector visited_storage_;
+  BoolVec visited_storage_;
 
   char* heap_copy_ = nullptr;
 };

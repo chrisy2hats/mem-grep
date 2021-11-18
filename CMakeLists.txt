@@ -36,7 +36,9 @@ add_library(mem-grep-core lib/misc/map-parser.cpp lib/misc/map-parser.hpp
 		lib/misc/remote-memory.cpp lib/misc/remote-memory.hpp
 		lib/filtering/heap-filter.cpp lib/filtering/heap-filter.hpp
 		lib/filtering/lambda-creator.cpp lib/filtering/lambda-creator.hpp
-		lib/misc/utils.hpp lib/misc/utils.cpp)
+		lib/misc/utils.hpp lib/misc/utils.cpp
+		lib/datastructures/bool-vec.hpp lib/datastructures/bool-vec.cpp
+		)
 
 add_executable(cli
         src/CLI/main.cpp
