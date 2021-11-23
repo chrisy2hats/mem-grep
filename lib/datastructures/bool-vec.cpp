@@ -1,8 +1,7 @@
 #include "bool-vec.hpp"
 
-BoolVec::BoolVec(const size_t max_index) 
-{
-	storage_ = new uint8_t[max_index/8];
+BoolVec::BoolVec(const size_t size) {
+  storage_ = new uint8_t[size/8]();
 }
 
 BoolVec::~BoolVec(){
