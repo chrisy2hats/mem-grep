@@ -40,16 +40,13 @@ add_library(mem-grep-core lib/misc/map-parser.cpp lib/misc/map-parser.hpp
 		lib/datastructures/bool-vec.hpp lib/datastructures/bool-vec.cpp
 		)
 
-add_executable(cli
-        src/CLI/main.cpp
-		src/CLI/argument-parsing/argument-parsing.cpp src/CLI/argument-parsing/argument-parsing.hpp
-		src/analyse-program.cpp src/analyse-program.hpp)
-		
-target_link_libraries(cli LINK_PRIVATE mem-grep-core)
-
-
-
 target_link_libraries(mem-grep-core Threads::Threads)
+
+add_executable(mem-grep
+		src/main.cpp
+		)
+
+target_link_libraries(mem-grep LINK_PRIVATE mem-grep-core)
 
 add_custom_target(cppcheck
         WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
