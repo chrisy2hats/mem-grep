@@ -3,7 +3,11 @@
 using std::cerr;
 using std::cout;
 
-char* RemoteMemory::Copy(const pid_t& pid, const void* start, const size_t& size) {
+RemoteObject RemoteMemory::RemoteCopy(const pid_t pid, const void* start, const size_t size){
+  return RemoteObject(RemoteMemory::Copy(pid,start,size), size);
+}
+
+char* RemoteMemory::Copy(const pid_t pid, const void* start, const size_t size) {
   if (start == nullptr) {
     cerr << __FUNCTION__ << " requested to copy from nullptr\n";
     return nullptr;

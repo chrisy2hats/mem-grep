@@ -13,6 +13,14 @@ struct SearchMatch {
   void* MatchAddress;
 };
 
+struct RemoteObject {
+  public:
+  const char* data;
+  const size_t size;
+  explicit RemoteObject(const char* data, const size_t size) : data(data), size(size) {}
+  ~RemoteObject() {delete[] data;}
+};
+
 class RemoteMemory {
  public:
   // It is on the calling function to sanitise the inputs to Copy
@@ -24,7 +32,9 @@ class RemoteMemory {
   // the entire data section requested It is on the caller to run delete[] on
   // the returned pointer when it is done with the memory assuming nullptr isn't
   // returned
-  static char* Copy(const pid_t& pid, const void* start, const size_t& size);
+  // TODO replace all calls to this with RemoteCopy and make Copy private
+  static char* Copy(const pid_t pid, const void* start, const size_t size);
+  static RemoteObject RemoteCopy(const pid_t pid, const void* start, const size_t size);
   template <typename T>
   static ssize_t Write(pid_t pid, void* start, T new_value);
 
