@@ -37,6 +37,7 @@ int main() {
   printf("Out PID is %d\n", pid);
   const size_t length = 5000;
   struct LL* ll = init_ll(length);
+  ll->data = 42;
 
   printf("Initialised LinkedList of %lu long\n", length);
 

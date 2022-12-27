@@ -30,16 +30,25 @@ int main(int argc, char** argv) {
   auto traversed = heap_traverser.TraversePointers(stack_to_heap_pointers);
 
   RemoteHeapPointer ll_head;
-  size_t most_subpointers = 0;
 
   for (const auto& base_pointer : traversed) {
-    if (base_pointer.total_sub_pointers > most_subpointers) {
-      most_subpointers = base_pointer.total_sub_pointers;
-      ll_head = base_pointer;
+    if (base_pointer.size_pointed_to != 32) {
+      continue;
+    }
+
+    // Find an object in memory pointing to an object of the same size as itself.
+    // TODO use proper linked list detection
+    if (base_pointer.total_sub_pointers) {
+      if (!base_pointer.contains_pointers_to.empty()) {
+	if (base_pointer.contains_pointers_to[0].size_pointed_to == base_pointer.size_pointed_to) {
+	  ll_head = base_pointer;
+	  break;
+	}
+      }
     }
   }
 
-  auto value_substitutions = std::vector<Substitution>{Substitution{.from = 0, .to = 100000}};
+  auto value_substitutions = std::vector<Substitution>{Substitution{.from = 42, .to = 100000}};
   std::cout << "Modifiy data in head of linked list malloc'd at " << ll_head.points_to << "\n";
   RemoteMemory::Substitute(pid, ll_head, value_substitutions);
 
