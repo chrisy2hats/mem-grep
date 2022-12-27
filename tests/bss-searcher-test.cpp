@@ -1,5 +1,5 @@
 #include <catch2/catch.hpp>
-#include "../src/shared/heap-traversing/bss-searcher.hpp"
+#include "../lib/heap-traversing/bss-searcher.hpp"
 #include "null-structs.hpp"
 #include "utils.hpp"
 
@@ -11,19 +11,16 @@ TEST_CASE("BSS: 5 pointers target program") {
   int pid = LaunchProgram(targetPath);
 
   std::cout << "Analysing PID:" << pid << std::endl;
-  auto parser = MapParser(pid);
-  auto maps = parser.ParseMap();
 
-  struct MapsEntry heapMetadata = NULL_MAPS_ENTRY;
-  struct MapsEntry bss = NULL_MAPS_ENTRY;
+  ParsedMaps parsed_maps = MapParser::ParseMap(pid);
 
-  bss = parser.getStoredBss();
-  heapMetadata = parser.getStoredHeap();
-  REQUIRE(heapMetadata != NULL_MAPS_ENTRY);
-  REQUIRE(bss != NULL_MAPS_ENTRY);
-  REQUIRE(bss.start != nullptr);
-  auto b = BssSearcher(bss, pid, 2048);
-  auto heapPointers = b.FindHeapPointers(heapMetadata);
+
+
+  REQUIRE(parsed_maps.heap != NULL_MAPS_ENTRY);
+  REQUIRE(parsed_maps.bss != NULL_MAPS_ENTRY);
+  REQUIRE(parsed_maps.bss.start != nullptr);
+  auto b = BssSearcher(parsed_maps.bss, pid, 2048);
+  auto heapPointers = b.FindHeapPointers(parsed_maps.heap);
   REQUIRE(heapPointers.size() == 5);
 
   std::cout << "Killing child\n";
@@ -35,19 +32,12 @@ TEST_CASE("BSS: 0 pointers target program") {
   int pid = LaunchProgram(targetPath);
 
   std::cout << "Analysing PID:" << pid << std::endl;
-  auto parser = MapParser(pid);
-  auto maps = parser.ParseMap();
+  ParsedMaps parsed_maps = MapParser::ParseMap(pid);
 
-  struct MapsEntry heapMetadata = NULL_MAPS_ENTRY;
-  struct MapsEntry bss = NULL_MAPS_ENTRY;
-
-  heapMetadata = parser.getStoredHeap();
-  bss = parser.getStoredBss();
-
-  REQUIRE(bss != NULL_MAPS_ENTRY);
-  REQUIRE(heapMetadata != NULL_MAPS_ENTRY);
-  const auto b = BssSearcher(bss, pid, 2048);
-  const auto heapPointers = b.FindHeapPointers(heapMetadata);
+  REQUIRE(parsed_maps.bss != NULL_MAPS_ENTRY);
+  REQUIRE(parsed_maps.heap != NULL_MAPS_ENTRY);
+  const auto b = BssSearcher(parsed_maps.bss, pid, 2048);
+  const auto heapPointers = b.FindHeapPointers(parsed_maps.heap);
 
   REQUIRE(heapPointers.empty());
   std::cout << "Killing child\n";

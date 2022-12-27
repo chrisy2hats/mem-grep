@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 
 #define UNIT_TEST
-#include "../src/shared/misc/map-parser.hpp"
+#include "../lib/misc/map-parser.hpp"
 #undef UNIT_TEST
 #include "null-structs.hpp"
 #include "utils.hpp"
@@ -98,18 +98,14 @@ TEST_CASE("Small x64_64 asm program"){
     const auto asmProgPath = "./asmTarget";
     pid_t pid = LaunchProgram(asmProgPath);
 
-    auto parser = MapParser(pid);
-    auto results = parser.ParseMap();
+    ParsedMaps parsed_maps = MapParser::ParseMap(pid);
 
-    struct MapsEntry stack = NULL_MAPS_ENTRY;
-    struct MapsEntry heap = NULL_MAPS_ENTRY;
-    stack=parser.getStoredStack();
-    heap=parser.getStoredHeap();
 
-    REQUIRE(results[0].file_path.find("asmTarget") != std::string::npos);
+
+    REQUIRE(parsed_maps.all_entries[0].file_path.find("asmTarget") != std::string::npos);
     //This asm program makes 0 heap allocations
-    REQUIRE(heap.start == NULL_MAPS_ENTRY.start);
-    REQUIRE(stack.start != NULL_MAPS_ENTRY.start);
+    REQUIRE(parsed_maps.heap.start == NULL_MAPS_ENTRY.start);
+    REQUIRE(parsed_maps.stack.start != NULL_MAPS_ENTRY.start);
 
     kill(pid, SIGKILL);
 }
@@ -117,13 +113,12 @@ TEST_CASE("Small x64_64 asm program"){
 TEST_CASE("Mandatory sections for every program"){
   auto has_mandatory_sections = [&] (const pid_t pid,const std::string& exe_name)->void{
     auto mp = MapParser(pid);
-    auto entires = mp.ParseMap();
-    auto stack = mp.getStoredStack();
-    auto heap = mp.getStoredHeap();
-    REQUIRE(stack!=NULL_MAPS_ENTRY);
-    REQUIRE(!entires.empty());
+    ParsedMaps parsed_maps = MapParser::ParseMap(pid);
+
+    REQUIRE(parsed_maps.stack!=NULL_MAPS_ENTRY);
+    REQUIRE(!parsed_maps.all_entries.empty());
     if (exe_name!="asmTarget" && exe_name != "runUntilManipulatedStack"){
-      REQUIRE(heap!=NULL_MAPS_ENTRY);
+      REQUIRE(parsed_maps.heap!=NULL_MAPS_ENTRY);
     }
   };
   ForeachTargetProgram(has_mandatory_sections);

@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
-#include "../src/shared/heap-traversing/heap-traverser.hpp"
-#include "../src/shared/heap-traversing/bss-searcher.hpp"
+#include "../lib/heap-traversing/heap-traverser.hpp"
+#include "../lib/heap-traversing/bss-searcher.hpp"
 #include "null-structs.hpp"
 #include "utils.hpp"
 
@@ -11,14 +11,10 @@ TEST_CASE("Multi-layered bss pointers") {
   const auto targetPath = "./multiLayeredBssHeapPointers";
   pid_t pid = LaunchProgram(targetPath);
   std::cout << "Analysing PID:" << pid << std::endl;
+  ParsedMaps parsed_maps = MapParser::ParseMap(pid);
 
-  auto parser = MapParser(pid);
-  auto maps = parser.ParseMap();
 
-  struct MapsEntry heapMetadata = NULL_MAPS_ENTRY;
-  struct MapsEntry bss = NULL_MAPS_ENTRY;
-  heapMetadata = parser.getStoredHeap();
-  bss = parser.getStoredBss();
+  auto bss = parsed_maps.bss;
   const size_t bssSize = (char *)bss.end - (char *)bss.start;
 
   // Addresses can't be more than 2**48 on modern x86_64 CPUs.
@@ -28,10 +24,10 @@ TEST_CASE("Multi-layered bss pointers") {
   const char *bssCopy = RemoteMemory::Copy(pid, bss.start, bssSize);
   REQUIRE(bssCopy != nullptr);
   auto b = BssSearcher(bss, pid, 2048);
-  auto heapPointers = b.FindHeapPointers(heapMetadata);
+  auto heapPointers = b.FindHeapPointers(parsed_maps.heap);
   REQUIRE(heapPointers.size() == 3);
   delete[] bssCopy;
-  auto traverser = HeapTraverser(pid,heapMetadata,2048);
+  auto traverser = HeapTraverser(pid,parsed_maps.heap,2048);
   auto deepPointers = traverser.TraversePointers(heapPointers);
   REQUIRE(PointerCount(deepPointers) == 9);
 

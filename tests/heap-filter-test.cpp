@@ -1,20 +1,18 @@
 #include <catch2/catch.hpp>
-#include "../src/shared/filtering/heap-filter.hpp"
-#include "../src/shared/misc/map-parser.hpp"
-#include "../src/shared/heap-traversing/bss-searcher.hpp"
+#include "../lib/filtering/heap-filter.hpp"
+#include "../lib/misc/map-parser.hpp"
+#include "../lib/heap-traversing/bss-searcher.hpp"
 #include "utils.hpp"
 
 TEST_CASE("Exclude none"){
   auto no_exclusions_returns_all = [](pid_t pid,const std::string&) {
-    auto m = MapParser(pid);
-    auto entries = m.ParseMap();
-    auto bss_metadata = m.getStoredBss();
-    auto heap_metadata = m.getStoredHeap();
 
-    auto bss_searcher = BssSearcher(bss_metadata, pid, 2048);
-    auto bss_pointers = bss_searcher.FindHeapPointers(heap_metadata);
+ParsedMaps parsed_maps = MapParser::ParseMap(pid);
 
-    auto traverser = HeapTraverser(pid, heap_metadata, 2048);
+    auto bss_searcher = BssSearcher(parsed_maps.bss, pid, 2048);
+    auto bss_pointers = bss_searcher.FindHeapPointers(parsed_maps.heap);
+
+    auto traverser = HeapTraverser(pid, parsed_maps.heap, 2048);
     const std::vector<RemoteHeapPointer> traversed = traverser.TraversePointers(bss_pointers);
 
     const auto AlwaysTrue = [](const RemoteHeapPointer&) { return true; };
@@ -26,15 +24,14 @@ TEST_CASE("Exclude none"){
 
 TEST_CASE("Has child pointers"){
   pid_t pid = LaunchProgram("./multiLayeredBssHeapPointers");
-  auto m = MapParser(pid);
-  auto entries = m.ParseMap();
-  auto bss_metadata = m.getStoredBss();
-  auto heap_metadata = m.getStoredHeap();
 
-  auto bss_searcher = BssSearcher(bss_metadata,pid,2048);
-  auto bss_pointers = bss_searcher.FindHeapPointers(heap_metadata);
+  ParsedMaps parsed_maps = MapParser::ParseMap(pid);
 
-  auto traverser = HeapTraverser(pid,heap_metadata,2048);
+
+  auto bss_searcher = BssSearcher(parsed_maps.bss,pid,2048);
+  auto bss_pointers = bss_searcher.FindHeapPointers(parsed_maps.heap);
+
+  auto traverser = HeapTraverser(pid,parsed_maps.heap,2048);
   const std::vector<RemoteHeapPointer> traversed = traverser.TraversePointers(bss_pointers);
 
   const auto HasChildPointers = [] (const RemoteHeapPointer& ptr){
@@ -46,15 +43,13 @@ TEST_CASE("Has child pointers"){
 
 TEST_CASE("Single and multi thread same result") {
   auto single_and_multi = [](const pid_t pid, const std::string&) {
-    auto m = MapParser(pid);
-    auto entries = m.ParseMap();
-    auto bss_metadata = m.getStoredBss();
-    auto heap_metadata = m.getStoredHeap();
+    ParsedMaps parsed_maps = MapParser::ParseMap(pid);
 
-    auto bss_searcher = BssSearcher(bss_metadata, pid, 2048);
-    auto bss_pointers = bss_searcher.FindHeapPointers(heap_metadata);
 
-    auto traverser = HeapTraverser(pid, heap_metadata, 2048);
+    auto bss_searcher = BssSearcher(parsed_maps.bss, pid, 2048);
+    auto bss_pointers = bss_searcher.FindHeapPointers(parsed_maps.heap);
+
+    auto traverser = HeapTraverser(pid, parsed_maps.heap, 2048);
     const std::vector<RemoteHeapPointer> traversed = traverser.TraversePointers(bss_pointers);
 
     auto MatchAll = [](const RemoteHeapPointer&) -> bool { return true; };

@@ -1,7 +1,7 @@
 #include <catch2/catch.hpp>
 #include <cstring>
 #include <unistd.h>
-#include "../src/shared/misc/remote-memory.hpp"
+#include "../lib/misc/remote-memory.hpp"
 
 const pid_t self = getpid();
 const auto kilobyte = 1000;

@@ -1,6 +1,6 @@
 #ifndef UNIT_TESTS_NULL_STRUCTS_HPP
 #define UNIT_TESTS_NULL_STRUCTS_HPP
-#include "../src/shared/misc/map-parser.hpp"
+#include "../lib/misc/map-parser.hpp"
 
 const struct MapsEntry NULL_MAPS_ENTRY =  {nullptr,nullptr,"","","","","",0};
 

@@ -27,17 +27,17 @@ add_executable(unit-tests
         utils.cpp
         utils.hpp
 
-        ../src/shared/misc/structs.cpp ../src/shared/misc/structs.hpp
-        ../src/shared/misc/map-parser.cpp ../src/shared/misc/map-parser.hpp
-        ../src/shared/misc/remote-memory.cpp ../src/shared/misc/remote-memory.hpp
-        ../src/shared/misc/prerun-checks.cpp ../src/shared/misc/prerun-checks.hpp
-        ../src/shared/heap-traversing/bss-searcher.cpp ../src/shared/heap-traversing/bss-searcher.hpp
-        ../src/shared/misc/malloc-metadata.cpp ../src/shared/misc/malloc-metadata.hpp
-        ../src/shared/heap-traversing/heap-traverser.cpp ../src/shared/heap-traversing/heap-traverser.hpp
-        ../src/shared/filtering/heap-filter.cpp ../src/shared/filtering/heap-filter.hpp
+        ../lib/misc/structs.cpp ../lib/misc/structs.hpp
+        ../lib/misc/map-parser.cpp ../lib/misc/map-parser.hpp
+        ../lib/misc/remote-memory.cpp ../lib/misc/remote-memory.hpp
+        ../lib/misc/prerun-checks.cpp ../lib/misc/prerun-checks.hpp
+        ../lib/heap-traversing/bss-searcher.cpp ../lib/heap-traversing/bss-searcher.hpp
+        ../lib/misc/malloc-metadata.cpp ../lib/misc/malloc-metadata.hpp
+        ../lib/heap-traversing/heap-traverser.cpp ../lib/heap-traversing/heap-traverser.hpp
+        ../lib/filtering/heap-filter.cpp ../lib/filtering/heap-filter.hpp
         )
 
-target_link_libraries(unit-tests Threads::Threads)
+target_link_libraries(unit-tests Threads::Threads mem-grep-core)
 
 set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -g -Wall -Wextra -pedantic")
 
