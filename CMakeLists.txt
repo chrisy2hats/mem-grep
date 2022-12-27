@@ -29,7 +29,6 @@ endif()
 
 
 add_subdirectory(lib)
-add_subdirectory(src)
 if (BUILD_EXAMPLES)
 #	set(EXECUTABLE_OUTPUT_PATH "examples/linked_list")
 	unset(EXECUTABLE_OUTPUT_PATH)

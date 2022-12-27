@@ -1,6 +1,4 @@
 #include "../../lib/heap-traversing/stack-searcher.hpp"
-#include "../../lib/datastructure-detection/linkedlist_detection.hpp"
-#include "../../lib/datastructure-detection/vector_detector.hpp"
 #include "../../lib/misc/prerun-checks.hpp"
 #include <iostream>
 #include <cstdlib>

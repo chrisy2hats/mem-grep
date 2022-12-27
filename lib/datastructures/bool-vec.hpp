@@ -2,10 +2,11 @@
 #define MEM_GREP_LIB_DATASTRUCTURES_BOOL_VEC_HPP_
 
 #include <array>
+#include <cstdint>
+#include <cstddef>
 
 // Simple container that is like a std::vector<bool> except it is thread safe
 // with no syncronisation where a std::vector<bool> may grow when one thread push_backs
-// TODO (out of interest) how is std::vector<bool> slightly faster
 class BoolVec {
   public:
   explicit BoolVec(const size_t max_index);
