@@ -26,27 +26,14 @@ if (BUILD_WITH_SANITISER)
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -fsanitize=address,undefined -fno-omit-frame-pointer")
 endif()
 
-add_library(mem-grep-core lib/misc/map-parser.cpp lib/misc/map-parser.hpp
-		lib/heap-traversing/bss-searcher.cpp lib/heap-traversing/bss-searcher.hpp
-		lib/misc/malloc-metadata.cpp lib/misc/malloc-metadata.hpp
-		lib/misc/prerun-checks.cpp lib/misc/prerun-checks.hpp
-		lib/heap-traversing/stack-searcher.cpp lib/heap-traversing/stack-searcher.hpp
-		lib/heap-traversing/heap-traverser.cpp lib/heap-traversing/heap-traverser.hpp
-		lib/misc/structs.cpp lib/misc/structs.hpp
-		lib/misc/remote-memory.cpp lib/misc/remote-memory.hpp
-		lib/filtering/heap-filter.cpp lib/filtering/heap-filter.hpp
-		lib/filtering/lambda-creator.cpp lib/filtering/lambda-creator.hpp
-		lib/misc/utils.hpp lib/misc/utils.cpp
-		lib/datastructures/bool-vec.hpp lib/datastructures/bool-vec.cpp
-		)
 
-target_link_libraries(mem-grep-core Threads::Threads)
-
-add_executable(mem-grep
-		src/main.cpp
-		)
-
-target_link_libraries(mem-grep LINK_PRIVATE mem-grep-core)
+add_subdirectory(lib)
+add_subdirectory(src)
+if (BUILD_EXAMPLES)
+#	set(EXECUTABLE_OUTPUT_PATH "examples/linked_list")
+	unset(EXECUTABLE_OUTPUT_PATH)
+	add_subdirectory(examples/linked_list)
+endif()
 
 add_custom_target(cppcheck
         WORKING_DIRECTORY "${PROJECT_SOURCE_DIR}"
