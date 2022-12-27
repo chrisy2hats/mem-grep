@@ -34,21 +34,47 @@ struct MapsEntry {
   size_t size;
 };
 
+
+
+struct ParsedMaps {
+  MapsEntry stack;
+  MapsEntry heap;
+  MapsEntry bss;
+  MapsEntry data;
+  MapsEntry text;
+  std::vector<MapsEntry> mmap_sections;
+//  ALLOCATOR allocator;
+  std::vector<MapsEntry> all_entries;
+  std::string executable_path;
+};
+
 std::ostream &operator<<(std::ostream &o, const MapsEntry &m);
+std::ostream &operator<<(std::ostream &o, const ParsedMaps &pm);
+//class MapParserv2 {
+//  public:
+//
+//};
+//
+//ParsedMaps MapParserv2::ParseMap(pid_t pid) {
+//
+//}
 
 class MapParser {
  public:
-  explicit MapParser(pid_t pid);
 
-  [[nodiscard]] std::vector<MapsEntry> ParseMap();
-  [[nodiscard]] MapsEntry getStoredStack() const { return stack_; }
-  [[nodiscard]] MapsEntry getStoredHeap() const { return heap_; }
-  [[nodiscard]] MapsEntry getStoredBss() const { return bss_; }
-  [[nodiscard]] MapsEntry getStoredData() const { return data_; }
-  [[nodiscard]] MapsEntry getStoredText() const { return text_; }
-  [[nodiscard]] std::vector<MapsEntry> getStoredMmap() const { return mmap_sections_; }
+  explicit MapParser(pid_t pid); //TODO remove use of this
+  static ParsedMaps ParseMap(pid_t pid);
+
 
  private:
+       [[nodiscard]] std::vector<MapsEntry> ParseMap();
+       [[nodiscard]] MapsEntry getStoredStack() const { return stack_; }
+       [[nodiscard]] MapsEntry getStoredHeap() const { return heap_; }
+       [[nodiscard]] MapsEntry getStoredBss() const { return bss_; }
+       [[nodiscard]] MapsEntry getStoredData() const { return data_; }
+       [[nodiscard]] MapsEntry getStoredText() const { return text_; }
+       [[nodiscard]] std::vector<MapsEntry> getStoredMmap() const { return mmap_sections_; }
+
   const pid_t pid_;
   const MapsEntry kEmptyMapsEntry = {nullptr, nullptr, "", "", "", "", "", 0};
   enum ALLOCATOR{

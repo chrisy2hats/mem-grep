@@ -15,6 +15,22 @@ std::ostream &operator<<(std::ostream &o, const MapsEntry &m) {
   return o;
 }
 
+std::ostream &operator<<(std::ostream &o, const ParsedMaps &pm) {
+
+  return o;
+}
+
+ParsedMaps MapParser::ParseMap(pid_t pid){
+  auto mp = MapParser(pid);
+  auto all_entries = mp.ParseMap();
+
+  return ParsedMaps{.stack=mp.getStoredStack(), .heap=mp.getStoredHeap(), .bss=mp.getStoredBss(), .data=mp.getStoredData(),
+		  .text=mp.getStoredText(),
+		  .mmap_sections=mp.getStoredMmap(),
+		  .all_entries=all_entries,
+		   .executable_path=mp.executable_path_};
+}
+
 std::string MapParser::GetExecutablePath() {
   const string exe_containing_file = "/proc/" + std::to_string(pid_) + "/exe";
   cout << "Obtaining executable location from:" << exe_containing_file << "\n";

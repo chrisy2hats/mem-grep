@@ -16,21 +16,16 @@ int main(int argc, char** argv) {
   const pid_t pid = stoi(std::string(argv[1]));
   std::cout << "Analysing " << pid << "\n";
 
-  auto parser = MapParser(pid);
-  auto entries = parser.ParseMap();
-  const MapsEntry stack = parser.getStoredStack();
-  const MapsEntry text = parser.getStoredText();
-  const MapsEntry heap = parser.getStoredHeap();
-  const MapsEntry bss = parser.getStoredBss();
+  ParsedMaps parsed_maps = MapParser::ParseMap(pid);
 
-  auto stackSearch = StackSearcher(stack.start, text, pid, 10000);
+  auto stackSearch = StackSearcher(parsed_maps.stack.start, parsed_maps.text, pid, 10000);
   std::vector<RemoteHeapPointer> stack_to_heap_pointers =
-		  stackSearch.findHeapPointers(stack.end, heap, 10000);
+		  stackSearch.findHeapPointers(parsed_maps.stack.end, parsed_maps.heap, 10000);
 
   std::cout << "Found " << stack_to_heap_pointers.size()
 	    << " pointers from the stack to the heap\n";
 
-  auto heap_traverser = HeapTraverser(pid, parser.getStoredHeap(), 250000);
+  auto heap_traverser = HeapTraverser(pid, parsed_maps.heap, 250000);
 
   auto traversed = heap_traverser.TraversePointers(stack_to_heap_pointers);
 
