@@ -36,3 +36,10 @@ report/*
 
 #Avoid files that are tests
 *test-*
+/build/
+
+src*
+.settings
+.cmake
+
+benchmarks

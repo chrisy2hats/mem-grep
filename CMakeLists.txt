@@ -7,12 +7,13 @@ set(MEM-GREP-OUT "${MEM-GREP-ROOT}/out")
 FIND_PACKAGE (Threads REQUIRED)
 
 option(BUILD_UNIT_TESTS "Build the unit tests and associated programs" OFF)
+option(BUILD_EXAMPLES "Build the unit tests and associated programs" OFF)
+option(BUILD_WITH_SANITISER "Build with address and UB sanitisation" OFF)
+
 if (BUILD_UNIT_TESTS)
 	add_subdirectory(tests)
 endif()
 
-
-option(BUILD_WITH_SANITISER "Build with address and UB sanitisation" OFF)
 
 set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_FLAGS_DEBUG "-g -Werror -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough")
