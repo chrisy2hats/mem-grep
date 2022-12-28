@@ -32,6 +32,10 @@ struct MapsEntry {
   std::string inode;
   std::string file_path;
   size_t size;
+
+  [[nodiscard]] inline bool contains_addr(const void* address) const {
+    return address >= start && address <= end;
+  }
 };
 
 

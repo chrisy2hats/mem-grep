@@ -64,8 +64,7 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
   for (size_t i = 0; i < base.size_pointed_to; i += sizeof(void*)) {
     memcpy(&current_8_bytes, block_start + i, sizeof(void*));
 
-    if (IsHeapAddress(current_8_bytes)) {
-
+    if (heap_metadata_.contains_addr(current_8_bytes)) {
       const auto pointer_location = (void**)(block_start + i);
       const auto address_pointed_to = (void*)*(size_t*)pointer_location;
       const auto local_address_pointed_to = RemoteToLocal(address_pointed_to);
@@ -73,20 +72,18 @@ RemoteHeapPointer HeapTraverser::FollowPointer(RemoteHeapPointer& base) {
       const size_t pointed_to_size =
 		      GetMallocMetadata(local_address_pointed_to, pid_, max_heap_obj_, false, true);
 
-      if (IsAlreadyVisited(address_pointed_to))
+      if (visited_.IsAlreadyVisited(address_pointed_to)) {
 	continue;
-      else
-    SetAlreadyVisited(address_pointed_to);
+      } else {
+	visited_.SetAlreadyVisited(address_pointed_to);
+      }
 
-      if (pointed_to_size == 0 || pointed_to_size > max_heap_obj_) continue;
+      if (pointed_to_size == 0 || pointed_to_size > max_heap_obj_)
+	continue;
 
-      void* actual_address = AddToVoid(base.points_to,i);
-      const RemoteHeapPointer child_pointer = {actual_address,
-		      address_pointed_to,
-		      pointed_to_size,
-		      0,
-		      {}
-      };
+      void* actual_address = AddToVoid(base.points_to, i);
+      const RemoteHeapPointer child_pointer = {
+		      actual_address, address_pointed_to, pointed_to_size, 0, {}};
       base.contains_pointers_to.push_back(child_pointer);
     }
   }

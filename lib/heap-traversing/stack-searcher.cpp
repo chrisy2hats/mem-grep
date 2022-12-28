@@ -11,20 +11,6 @@ StackSearcher::StackSearcher(const void *stackStart, const MapsEntry &text,
 		pid_(pid),
 		max_heap_obj_(max_heap_obj) {}
 
-// If the address is within the .text part of the target binary
-// If an address is within the .text it is executable code which means it is the address of a
-// function or a return address
-[[nodiscard]] bool StackSearcher::AddressIsInText(const void *address) const {
-  const bool IsInText = address >= text_start_ && address <= text_end_;
-  return IsInText;
-}
-
-[[nodiscard]] bool StackSearcher::AddressIsOnHeap(
-		const void *address, const void *heap_start, const void *heap_end) const {
-  const bool IsOnHeap = address >= heap_start && address <= heap_end;
-  return IsOnHeap;
-}
-
 std::vector<RemoteHeapPointer> StackSearcher::findHeapPointers(const void *current_stack_end,
 		const MapsEntry &heap, size_t frames_to_search) const {
   // Every program has a stack so these should never be null
