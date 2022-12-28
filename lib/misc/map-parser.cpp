@@ -4,9 +4,6 @@ using std::cerr;
 using std::cout;
 using std::string;
 
-MapParser::MapParser(const pid_t pid) : pid_(pid) {
-  executable_path_ = GetExecutablePath();
-}
 
 std::ostream &operator<<(std::ostream &o, const MapsEntry &m) {
   o << "start : " << m.start << "\nend : " << m.end << "\npermissions : " << m.permissions
@@ -16,23 +13,12 @@ std::ostream &operator<<(std::ostream &o, const MapsEntry &m) {
 }
 
 std::ostream &operator<<(std::ostream &o, const ParsedMaps &pm) {
-
   return o;
 }
 
-ParsedMaps MapParser::ParseMap(pid_t pid){
-  auto mp = MapParser(pid);
-  auto all_entries = mp.ParseMap();
 
-  return ParsedMaps{.stack=mp.getStoredStack(), .heap=mp.getStoredHeap(), .bss=mp.getStoredBss(), .data=mp.getStoredData(),
-		  .text=mp.getStoredText(),
-		  .mmap_sections=mp.getStoredMmap(),
-		  .all_entries=all_entries,
-		   .executable_path=mp.executable_path_};
-}
-
-std::string MapParser::GetExecutablePath() {
-  const string exe_containing_file = "/proc/" + std::to_string(pid_) + "/exe";
+std::string MapParser::GetExecutablePath(pid_t pid) {
+  const string exe_containing_file = "/proc/" + std::to_string(pid) + "/exe";
   cout << "Obtaining executable location from:" << exe_containing_file << "\n";
 
   char buff[PATH_MAX];
@@ -44,13 +30,13 @@ std::string MapParser::GetExecutablePath() {
     assert(exe.at(0) == '/');
     return exe;
   }
-  cerr << "Failed to obtain executable location for PID:" << pid_ << '\n';
+  cerr << "Failed to obtain executable location for PID:" << pid << '\n';
   cerr << "Error string:" << strerror(errno) << '\n';
   exit(1);
 }
 
-[[nodiscard]] std::vector<struct MapsEntry> MapParser::ParseMap() {
-  const string maps_path = "/proc/" + std::to_string(pid_) + "/maps";
+[[nodiscard]] ParsedMaps MapParser::ParseMap(pid_t pid) {
+  const string maps_path = "/proc/" + std::to_string(pid) + "/maps";
 
   std::ifstream maps_file(maps_path);
   if (!maps_file) {
@@ -59,70 +45,49 @@ std::string MapParser::GetExecutablePath() {
   }
   cout << "Parsing file:" << maps_path << '\n';
 
-  std::vector<MapsEntry> entries = {};
+
+  ParsedMaps parsed = {.stack = kEmptyMapsEntry,
+		  .heap = kEmptyMapsEntry,
+		  .bss = kEmptyMapsEntry,
+		  .data = kEmptyMapsEntry,
+		  .text = kEmptyMapsEntry,
+		  .mmap_sections = std::vector<MapsEntry>(),
+		  .all_entries = std::vector<MapsEntry>(),
+
+		  .executable_path = MapParser::GetExecutablePath(pid)};
+
   string line;
   while (std::getline(maps_file, line)) {
-    MapsEntry entry = ParseLine(line);
-    if (IsBssEntry(entry)) {
-      bss_ = entry;
-      entries.push_back(entry);
-      continue;
-    }
-    if (IsHeapEntry(entry)) {
-      heap_sections_.push_back(entry);
-      entries.push_back(entry);
-      continue;
-    }
-    if (IsStackEntry(entry)) {
-      stack_ = entry;
-      entries.push_back(entry);
-      continue;
-    }
-    if (IsDataEntry(entry)) {
-      data_ = entry;
-      entries.push_back(entry);
-      continue;
-    }
-    if (IsTextEntry(entry)) {
-      text_ = entry;
-      continue;
-    }
-    if (IsMmapEntry(entry)) {
-      mmap_sections_.push_back(entry);
-      entries.push_back(entry);
-      continue;
-    }
-    entries.push_back(entry);
-  }
-  if (heap_sections_.empty()) {
-    cerr << "Target program appears to have no heap.\n";
-  }
-  const bool multiple_heaps = heap_sections_.size() > 1;
-  if (multiple_heaps) {
-    if (AreContiguous(heap_sections_)) {
-      heap_ = MergeContiguousEntries(heap_sections_);
-      cout << "Multiple heaps being treated as one as they are contiguous\n";
-      cout << "Merged heap: " << heap_ << "\n";
-    } else {
-      // TODO support non contig multi-heap programs
-      cerr << "Non-contiguous multi heap programs currently not supported\n";
-      exit(1);
-    }
-  } else {
-    if (!heap_sections_.empty()) {
-      heap_ = heap_sections_[0];
-    }
-  }
+    const MapsEntry entry = MapParser::ParseLine(line);
+    parsed.all_entries.push_back(entry);
 
+    if (MapParser::IsBssEntry(entry, parsed.executable_path)) {
+      parsed.bss = entry;
+    } else if (IsHeapEntry(entry)) {
+      parsed.heap=entry;
+    }
+    else if (MapParser::IsStackEntry(entry)) {
+      parsed.stack = entry;
+    }
+    else if (MapParser::IsDataEntry(entry)) {
+      parsed.data = entry;
+    }
+    else if (MapParser::IsTextEntry(entry, parsed.executable_path)) {
+      parsed.text = entry;
+    }
+    else if (MapParser::IsMmapEntry(entry)) {
+      parsed.mmap_sections.push_back(entry);
+    }
+  }
   maps_file.close();
-  return entries;
+  return parsed;
 }
 
 // Parse a single line of a /dev/PID/maps.
 // The lines have the following format
 //    address           perms offset  dev   inode       pathname
 //    00400000-00452000 r-xp 00000000 08:02 173521      /usr/bin/dbus-daemon
-struct MapsEntry MapParser::ParseLine(const std::string &line) const {
+struct MapsEntry MapParser::ParseLine(const std::string &line){
 
   if (line.empty())
     return kEmptyMapsEntry;
@@ -163,48 +128,18 @@ struct MapsEntry MapParser::ParseLine(const std::string &line) const {
   return mapEntry;
 }
 
-// Take the .start from the first heap and the .end from the last heap
-MapsEntry MapParser::MergeContiguousEntries(const std::vector<MapsEntry> &entries) const {
-  if (entries.empty())
-    return kEmptyMapsEntry;
 
-  MapsEntry merged_heap = entries[0];
-  merged_heap.end = entries[entries.size() - 1].end;
-  merged_heap.size = reinterpret_cast<size_t>(SubFromVoid(merged_heap.end, merged_heap.start));
-  return merged_heap;
-}
-
-bool MapParser::AreContiguous(std::vector<MapsEntry>& entries) const {
-  //We consider one entry contiguous
-  if (entries.size() <= 1)
-    return true;
-
-  const auto kCompareStart = [] (const MapsEntry& a,const MapsEntry& b) -> bool {
-    return a.start < b.start;
-  };
-  std::sort(begin(entries),end(entries),kCompareStart);
-
-  MapsEntry previous = entries[0];
-  for (size_t i=1;i<entries.size();i++){
-    if (entries[i].start != previous.end)
-      return false;
-
-    previous=entries[i];
-  }
-  return true;
-}
-
-bool MapParser::IsExecutable(const MapsEntry &entry) const {
+bool MapParser::IsExecutable(const MapsEntry &entry) {
   return entry.permissions.find('x') != std::string::npos;
 }
 
-bool MapParser::IsReadable(const MapsEntry &entry) const {
+bool MapParser::IsReadable(const MapsEntry &entry) {
   return entry.permissions.find('r') != std::string::npos;
 }
-bool MapParser::IsWriteable(const MapsEntry &entry) const {
+bool MapParser::IsWriteable(const MapsEntry &entry) {
   return entry.permissions.find('w') != std::string::npos;
 }
-bool MapParser::IsPrivate(const MapsEntry &entry) const {
+bool MapParser::IsPrivate(const MapsEntry &entry) {
   return entry.permissions.find('p') != std::string::npos;
 }
 
@@ -213,29 +148,29 @@ bool MapParser::IsPrivate(const MapsEntry &entry) const {
 // 55d3cab00000-55d3cabac000 r-xp 00000000 fd:01 3670594                    /usr/bin/kate
 // But this isn't (notice not executable)
 // 55d3cadab000-55d3cadb3000 r--p 000ab000 fd:01 3670594                    /usr/bin/kate
-bool MapParser::IsTextEntry(const MapsEntry &entry) const {
+bool MapParser::IsTextEntry(const MapsEntry &entry, std::string_view exe_path) {
   return IsReadable(entry) && IsExecutable(entry) && !IsWriteable(entry) &&
-	 entry.file_path == executable_path_;
+	 entry.file_path == exe_path;
 }
 
-bool MapParser::IsHeapEntry(const MapsEntry &entry) const {
+bool MapParser::IsHeapEntry(const MapsEntry &entry) {
   return entry.file_path == "[heap]";
 }
 
-bool MapParser::IsStackEntry(const MapsEntry &entry) const {
+bool MapParser::IsStackEntry(const MapsEntry &entry) {
   return entry.file_path == "[stack]";
 }
 
 // Mmaped regions don't have a file path associated
-bool MapParser::IsMmapEntry(const MapsEntry &entry) const {
+bool MapParser::IsMmapEntry(const MapsEntry &entry) {
   return entry.file_path.empty();
 }
 
-bool MapParser::IsBssEntry(const MapsEntry &entry) const {
-  return IsReadable(entry) && IsWriteable(entry) && entry.file_path == executable_path_;
+bool MapParser::IsBssEntry(const MapsEntry &entry, std::string_view exe_path) {
+  return IsReadable(entry) && IsWriteable(entry) && entry.file_path == exe_path;
 }
 
-bool MapParser::IsDataEntry(const MapsEntry& ) const {
+bool MapParser::IsDataEntry(const MapsEntry &) {
   // TODO need to work out the characteristics of .data sections
   return false;
 }
