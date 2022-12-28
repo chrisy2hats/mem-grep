@@ -18,28 +18,10 @@ int main(int argc, char** argv) {
 
   ParsedMaps parsed_maps = MapParser::ParseMap(pid);
 
-  auto stackSearch = StackSearcher(parsed_maps.stack.start, parsed_maps.text, pid, 10000);
-  std::vector<RemoteHeapPointer> stack_to_heap_pointers =
-		  stackSearch.findHeapPointers(parsed_maps.stack.end, parsed_maps.heap, 10000);
-
-  auto a = std::vector<RemoteHeapPointer>();
-  for (auto i: stack_to_heap_pointers) {
-
-    if (i.size_pointed_to == 32) {
-      std::cout << i << "\n";
-		a.push_back(i);
-    }
-  }
-
-
-
-  std::cout << "Found " << a.size()
-	    << " pointers from the stack to the heap\n";
+  std::vector<RemoteHeapPointer> stack_to_heap_pointers = StackSearcher::findHeapPointers(pid,parsed_maps,1024*1024);
 
   auto heap_traverser = HeapTraverser(pid, parsed_maps.heap, 250000);
-  std::cout << parsed_maps.heap << "\n";
-
-  auto traversed = heap_traverser.TraversePointers(a);
+  auto traversed = heap_traverser.TraversePointers(stack_to_heap_pointers);
 
   RemoteHeapPointer ll_head;
   size_t most_sub_pointers = 0;
