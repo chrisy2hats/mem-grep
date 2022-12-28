@@ -27,14 +27,7 @@ add_executable(unit-tests
         utils.cpp
         utils.hpp
 
-        ../lib/misc/structs.cpp ../lib/misc/structs.hpp
-        ../lib/misc/map-parser.cpp ../lib/misc/map-parser.hpp
-        ../lib/misc/remote-memory.cpp ../lib/misc/remote-memory.hpp
-        ../lib/misc/prerun-checks.cpp ../lib/misc/prerun-checks.hpp
-        ../lib/heap-traversing/bss-searcher.cpp ../lib/heap-traversing/bss-searcher.hpp
-        ../lib/misc/malloc-metadata.cpp ../lib/misc/malloc-metadata.hpp
-        ../lib/heap-traversing/heap-traverser.cpp ../lib/heap-traversing/heap-traverser.hpp
-        ../lib/filtering/heap-filter.cpp ../lib/filtering/heap-filter.hpp
+        visited-tracker-tests.cpp
         )
 
 target_link_libraries(unit-tests Threads::Threads mem-grep-core)
