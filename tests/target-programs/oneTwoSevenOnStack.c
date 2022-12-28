@@ -4,6 +4,7 @@
 
 int main(){
 	volatile u_int32_t y= 127127;
+	printf("127127 put on stack at: %p", (void*) &y);
 
 	//Force heap to be initialised
 	int* x=malloc(sizeof(int));

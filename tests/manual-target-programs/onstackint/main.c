@@ -11,10 +11,10 @@ int main(){
 	printf("%s%u\n","PID=",PID);
 
 	u_int32_t x = 127;
-	printf("%s%p\n","X has been put at :",&x);
+	printf("%s%p\n","X has been put at :",(void*) &x);
 	while (1){
                 //Stops compiler inlining value as it could change
-		if (rand() == x){
+		if ((u_int32_t) rand() == x){
 			x++;
 			printf("X increased\n");
 		}else{
