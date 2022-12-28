@@ -1,7 +1,8 @@
 #include <catch2/catch.hpp>
 #include "../lib/filtering/heap-filter.hpp"
 #include "../lib/misc/map-parser.hpp"
-#include "../lib/heap-traversing/bss-searcher.hpp"
+#include "../lib/heap-traversing/region-scanner.hpp"
+#include "../lib/heap-traversing/heap-traverser.hpp"
 #include "utils.hpp"
 
 TEST_CASE("Exclude none"){
@@ -9,8 +10,7 @@ TEST_CASE("Exclude none"){
 
 ParsedMaps parsed_maps = MapParser::ParseMap(pid);
 
-    auto bss_searcher = BssSearcher(parsed_maps.bss, pid, 2048);
-    auto bss_pointers = bss_searcher.FindHeapPointers(parsed_maps.heap);
+    auto bss_pointers = RegionScanner::FindHeapPointers(pid, parsed_maps.heap, parsed_maps.bss, 1024*1024);
 
     auto traverser = HeapTraverser(pid, parsed_maps.heap, 2048);
     const std::vector<RemoteHeapPointer> traversed = traverser.TraversePointers(bss_pointers);
@@ -27,9 +27,7 @@ TEST_CASE("Has child pointers"){
 
   ParsedMaps parsed_maps = MapParser::ParseMap(pid);
 
-
-  auto bss_searcher = BssSearcher(parsed_maps.bss,pid,2048);
-  auto bss_pointers = bss_searcher.FindHeapPointers(parsed_maps.heap);
+  auto bss_pointers = RegionScanner::FindHeapPointers(pid, parsed_maps.heap, parsed_maps.bss, 1024*1024);
 
   auto traverser = HeapTraverser(pid,parsed_maps.heap,2048);
   const std::vector<RemoteHeapPointer> traversed = traverser.TraversePointers(bss_pointers);
@@ -46,8 +44,7 @@ TEST_CASE("Single and multi thread same result") {
     ParsedMaps parsed_maps = MapParser::ParseMap(pid);
 
 
-    auto bss_searcher = BssSearcher(parsed_maps.bss, pid, 2048);
-    auto bss_pointers = bss_searcher.FindHeapPointers(parsed_maps.heap);
+    auto bss_pointers = RegionScanner::FindHeapPointers(pid, parsed_maps.heap, parsed_maps.bss, 1024*1024);
 
     auto traverser = HeapTraverser(pid, parsed_maps.heap, 2048);
     const std::vector<RemoteHeapPointer> traversed = traverser.TraversePointers(bss_pointers);

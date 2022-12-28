@@ -1,6 +1,6 @@
 #include <catch2/catch.hpp>
 #include "../lib/heap-traversing/heap-traverser.hpp"
-#include "../lib/heap-traversing/bss-searcher.hpp"
+#include "../lib/heap-traversing/region-scanner.hpp"
 #include "null-structs.hpp"
 #include "utils.hpp"
 
@@ -23,8 +23,10 @@ TEST_CASE("Multi-layered bss pointers") {
 
   const char *bssCopy = RemoteMemory::Copy(pid, bss.start, bssSize);
   REQUIRE(bssCopy != nullptr);
-  auto b = BssSearcher(bss, pid, 2048);
-  auto heapPointers = b.FindHeapPointers(parsed_maps.heap);
+
+
+  auto heapPointers = RegionScanner::FindHeapPointers(pid, parsed_maps.heap, parsed_maps.bss, 1024*1024);
+
   REQUIRE(heapPointers.size() == 3);
   delete[] bssCopy;
   auto traverser = HeapTraverser(pid,parsed_maps.heap,2048);
