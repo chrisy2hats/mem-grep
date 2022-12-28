@@ -22,30 +22,33 @@ int main(int argc, char** argv) {
   std::vector<RemoteHeapPointer> stack_to_heap_pointers =
 		  stackSearch.findHeapPointers(parsed_maps.stack.end, parsed_maps.heap, 10000);
 
-  std::cout << "Found " << stack_to_heap_pointers.size()
+  auto a = std::vector<RemoteHeapPointer>();
+  for (auto i: stack_to_heap_pointers) {
+
+    if (i.size_pointed_to == 32) {
+      std::cout << i << "\n";
+		a.push_back(i);
+    }
+  }
+
+
+
+  std::cout << "Found " << a.size()
 	    << " pointers from the stack to the heap\n";
 
   auto heap_traverser = HeapTraverser(pid, parsed_maps.heap, 250000);
+  std::cout << parsed_maps.heap << "\n";
 
-  auto traversed = heap_traverser.TraversePointers(stack_to_heap_pointers);
+  auto traversed = heap_traverser.TraversePointers(a);
 
   RemoteHeapPointer ll_head;
+  size_t most_sub_pointers = 0;
 
   for (const auto& base_pointer : traversed) {
-    if (base_pointer.size_pointed_to != 32) {
-      continue;
-    }
-
-    // Find an object in memory pointing to an object of the same size as itself.
-    // TODO use proper linked list detection
-    if (base_pointer.total_sub_pointers) {
-      if (!base_pointer.contains_pointers_to.empty()) {
-	if (base_pointer.contains_pointers_to[0].size_pointed_to == base_pointer.size_pointed_to) {
+	if (base_pointer.total_sub_pointers > most_sub_pointers){
+	  most_sub_pointers = base_pointer.total_sub_pointers;
 	  ll_head = base_pointer;
-	  break;
 	}
-      }
-    }
   }
 
   auto value_substitutions = std::vector<Substitution>{Substitution{.from = 42, .to = 100000}};
