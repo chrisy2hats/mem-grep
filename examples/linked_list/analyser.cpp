@@ -1,4 +1,5 @@
-#include "../../lib/heap-traversing/stack-searcher.hpp"
+#include "../../lib/heap-traversing/region-scanner.hpp"
+#include "../../lib/heap-traversing/heap-traverser.hpp"
 #include "../../lib/misc/prerun-checks.hpp"
 #include <iostream>
 #include <cstdlib>
@@ -18,7 +19,7 @@ int main(int argc, char** argv) {
 
   ParsedMaps parsed_maps = MapParser::ParseMap(pid);
 
-  std::vector<RemoteHeapPointer> stack_to_heap_pointers = StackSearcher::findHeapPointers(pid,parsed_maps,1024*1024);
+  std::vector<RemoteHeapPointer> stack_to_heap_pointers = RegionScanner::FindHeapPointers(pid,parsed_maps.heap, parsed_maps.stack, 1024*1024);
 
   auto heap_traverser = HeapTraverser(pid, parsed_maps.heap, 250000);
   auto traversed = heap_traverser.TraversePointers(stack_to_heap_pointers);
