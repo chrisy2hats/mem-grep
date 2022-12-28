@@ -6,6 +6,7 @@
 #include "../misc/structs.hpp"
 #include "../misc/utils.hpp"
 #include "../datastructures/bool-vec.hpp"
+#include "visited-tracker.hpp"
 
 #include <iostream>
 #include <vector>
@@ -28,7 +29,6 @@ class HeapTraverser {
   RemoteHeapPointer FollowPointer(RemoteHeapPointer& base);
   void WorkerThread(std::vector<RemoteHeapPointer>& base_pointers,
 		  std::atomic<uint64_t>& shared_index);
-  [[nodiscard]] inline bool IsHeapAddress(const void* address) const;
 
   // During traversal the same memory address must not be visited twice as otherwise
   // We may end up in an infinite loop due to memory address pointing to each other
@@ -46,10 +46,6 @@ class HeapTraverser {
   // 808/64 + (808/8)%8
   // 12 +  1 = The 13th bit of the vector
 
-  [[nodiscard]] inline size_t CalculateBitVecOffset(const void* address) const;
-  void SetAlreadyVisited(const void* address);
-  [[nodiscard]] bool IsAlreadyVisited(const void* address) const;
-
   [[nodiscard]] inline void* LocalToRemote(const void* local_address) const;
   [[nodiscard]] inline void* RemoteToLocal(const void* remote_address) const;
 
@@ -57,11 +53,7 @@ class HeapTraverser {
   const pid_t pid_;
   const size_t max_heap_obj_;
   
-  static constexpr auto BITS_IN_A_BYTE=8;
-
-
-  // Store which memory addresses within the heap have already been visited
-  BoolVec visited_storage_;
+  VisitedTracker visited_;
 
   char* heap_copy_ = nullptr;
 };

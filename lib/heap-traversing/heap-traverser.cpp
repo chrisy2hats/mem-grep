@@ -7,8 +7,7 @@ HeapTraverser::HeapTraverser(const pid_t pid, const MapsEntry& heap, const size_
 		heap_metadata_(heap),
 		pid_(pid),
 		max_heap_obj_(max_heap_obj),
-		visited_storage_(BoolVec(heap_metadata_.size))
-{
+		visited_(VisitedTracker(heap_metadata_)) {
 }
 
 HeapTraverser::~HeapTraverser() {
@@ -113,40 +112,18 @@ void HeapTraverser::WorkerThread(std::vector<RemoteHeapPointer>& base_pointers,
     // "base_pointers.at(current_local_index) is safe
 
     base_pointers.at(current_local_index) =
-        HeapTraverser::FollowPointer(base_pointers.at(current_local_index));
+		    HeapTraverser::FollowPointer(base_pointers.at(current_local_index));
   }
 }
 
-// Checks if the pointer points to an address in the remote processes heap
-[[nodiscard]] inline bool HeapTraverser::IsHeapAddress(const void* address) const {
-  const bool is_on_heap = address >= heap_metadata_.start && address <= heap_metadata_.end;
-  return is_on_heap;
-}
-
-// Look in the header file for an explanation
-[[nodiscard]] inline size_t HeapTraverser::CalculateBitVecOffset(const void* address) const{
-  const size_t heap_offset = (size_t)address - (size_t)heap_metadata_.start;
-  const size_t byte_offset = heap_offset/(BITS_IN_A_BYTE*(sizeof(void*)));
-  const uint8_t bit_into_byte = (heap_offset/BITS_IN_A_BYTE) % 8;
-  return byte_offset + bit_into_byte;
-}
-
-void HeapTraverser::SetAlreadyVisited(const void* address) {
-  visited_storage_.set_bit(CalculateBitVecOffset(address));
-}
-
-[[nodiscard]] bool HeapTraverser::IsAlreadyVisited(const void* address) const {
-  return visited_storage_.is_set(CalculateBitVecOffset(address));
-}
-
 [[nodiscard]] inline void* HeapTraverser::LocalToRemote(const void* local_address) const {
-  const auto offset = (size_t)SubFromVoid(local_address,heap_copy_);
-  void* remote_address = AddToVoid(heap_metadata_.start,offset);
+  const auto offset = (size_t)SubFromVoid(local_address, heap_copy_);
+  void* remote_address = AddToVoid(heap_metadata_.start, offset);
   return remote_address;
 }
 
 [[nodiscard]] inline void* HeapTraverser::RemoteToLocal(const void* remote_address) const {
-  const auto offset = (size_t) SubFromVoid(remote_address,heap_metadata_.start);
-  void* local_address = AddToVoid(heap_copy_,offset);
+  const auto offset = (size_t)SubFromVoid(remote_address, heap_metadata_.start);
+  void* local_address = AddToVoid(heap_copy_, offset);
   return local_address;
 }

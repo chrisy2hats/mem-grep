@@ -8,6 +8,8 @@
 
 class StackSearcher {
  public:
+//	 std::vector<RemoteHeapPointer> static findHeapPointers(const pid_t pid,
+//			 const MapsEntry &stack, const MapsEntry &heap, size_t frames_to_search = 0);
   // Stack end may change during lifetime of object so shouldn't be in constructor
   // Same for the heap start and end
   StackSearcher(const void *stackStart, const MapsEntry &text, pid_t pid, size_t max_heap_obj);
