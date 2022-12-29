@@ -9,7 +9,7 @@ For examples of how the library can be used look in the ``examples`` directory
 
 ## Building 
 ### Dependencies    
-A C++ compiler (both g++ and clang++ tested)  
+A C++20 compiler   
 cmake (Version 3 or newer)  
 GNU make  
 Linux Kernel providing process_vm_readv (v3.2 onwards)    

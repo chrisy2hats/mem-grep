@@ -15,8 +15,8 @@ if (BUILD_UNIT_TESTS)
 endif()
 
 
-set(CMAKE_CXX_STANDARD 17)
-set(CMAKE_CXX_FLAGS_DEBUG "-g -Werror -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough")
+set(CMAKE_CXX_STANDARD 20)
+set(CMAKE_CXX_FLAGS_DEBUG "-g -Werror -Wall -Wextra -Wreorder -Weffc++ -Wpedantic -Wimplicit-fallthrough -Wno-c++20-designator")
 if (CMAKE_CXX_COMPILER_ID STREQUAL "Clang")
     #Force clang to build std lib function in debug. Otherwise GDB can't see stdlib objects properly
 	set(CMAKE_CXX_FLAGS_DEBUG "${CMAKE_CXX_FLAGS_DEBUG} -D_GLIBCXX_DEBUG")
