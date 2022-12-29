@@ -1,8 +1,8 @@
 #include "bool-vec.hpp"
 
-BoolVec::BoolVec(const size_t size) {
-  storage_ = std::make_unique<uint8_t[]>(size/8);
-}
+BoolVec::BoolVec(const size_t size) :
+		storage_(std::make_unique<uint8_t[]>(size/8)){}
+
 
 void BoolVec::set_bit(const size_t index) {
   const size_t byte_in_block = index/8;

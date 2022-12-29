@@ -14,7 +14,7 @@ TEST_CASE("Visited Tracker") {
 
   auto vt = VisitedTracker(fake_heap);
 
-  for (auto i=0;i<size;i++){
+  for (size_t i=0;i<size;i++){
     void* addr = (void*) (START+i);
     REQUIRE_FALSE(vt.IsAlreadyVisited(addr));
     vt.SetAlreadyVisited(addr);
