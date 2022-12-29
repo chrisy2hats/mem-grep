@@ -8,7 +8,7 @@ add_library(mem-grep-core
         misc/remote-memory.cpp misc/remote-memory.hpp
         filtering/heap-filter.cpp filtering/heap-filter.hpp
         filtering/lambda-creator.cpp filtering/lambda-creator.hpp
-        misc/utils.hpp misc/utils.cpp
+        misc/utils.hpp
         datastructures/bool-vec.hpp datastructures/bool-vec.cpp
         heap-traversing/visited-tracker.cpp heap-traversing/visited-tracker.hpp)
 
