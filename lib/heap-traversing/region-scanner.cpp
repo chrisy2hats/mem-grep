@@ -8,11 +8,6 @@ std::vector<RemoteHeapPointer> RegionScanner::FindHeapPointers(pid_t pid, const 
 
   auto pointers_to_heap = std::vector<RemoteHeapPointer>();
   for (size_t i = 0; i < scanned_region.size; i += (sizeof(void *))) {
-    size_t current = 0;
-    memcpy(&current, (char *)kRegionCopy.data + i, sizeof(void *));
-    if (current == 0) {
-      continue;
-    }
 
     /*If our target programs source has a function that has a pointer to a heap object
     Like
