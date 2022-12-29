@@ -13,6 +13,8 @@ std::ostream &operator<<(std::ostream &o, const MapsEntry &m) {
 }
 
 std::ostream &operator<<(std::ostream &o, const ParsedMaps &pm) {
+  o << "Stack: " << pm.stack << "\nHeap: " << pm.heap << "\nBss: " << pm.bss << "\nData: " << pm.data << "\nText: "
+		  << pm.text << "\nExe path: " << pm.executable_path << "\n";
   return o;
 }
 

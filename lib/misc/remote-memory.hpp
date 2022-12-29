@@ -19,6 +19,9 @@ struct RemoteObject {
   const size_t size;
   explicit RemoteObject(const char* data, const size_t size) : data(data), size(size) {}
   ~RemoteObject() {delete[] data;}
+  RemoteObject operator=(const RemoteObject&) = delete;
+  RemoteObject operator=(RemoteObject&) = delete;
+  RemoteObject(const RemoteObject&) = delete;
 };
 
 class RemoteMemory {
